@@ -2,3 +2,9 @@
 Immunostainings/pax5_IF_amp/
 
 Immunostainings_Pax5/
+
+SharpTrack/annotation_volume_10um_by_index.npy
+
+SharpTrack/template_volume_10um.npy
+
+SharpTrack/npy-matlab-master/npy-matlab-master/tests/

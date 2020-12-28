@@ -58,17 +58,20 @@ set(gca,'Color','w')
 
 
 %% plot the areas with more neurons (selection)
+index = 98:108; % change here depending on how long the list is, how many areas
 
-X_max = X(106:116,:); %chnage here depending on how long the list is, how many areas
-sorted_table_max = sorted_table_brain_areas(106:116,:);
-list3 = list2(106:116,:); 
+X_max = X(index,:); 
+sorted_table_max = sorted_table_brain_areas(index,:);
+list3 = list2(index,:); 
 X_max = cellstr(X_max);
 X_max = cell2table(X_max);
 X_max = table2array(X_max);
 X_max = categorical (X_max);
 
 figure
-barh(X_max, sorted_table_max.d_counts,'FaceColor',[0.82 0.33 0.33],'EdgeColor', 'none');
+X_max_reordered = reordercats(X_max, cellstr(X_max));
+barh(X_max_reordered, sorted_table_max.d_counts,'FaceColor',[0.82 0.33 0.33],'EdgeColor', 'none');
+% yticklabels(list3)
 ylabel('Brain areas')
 xlabel('Neurons')
 set(gca,'TickDir','out');
@@ -84,8 +87,8 @@ k(emptytozero) = {0} ;
 k = cell2mat(k);
 
 % amount of roi's in bigger brain area
-for i=1:length(k);
-    if k(i)>=1;
+for i=1:length(k)
+    if k(i)>=1
        k(i)=1;
     end
 end
@@ -103,8 +106,8 @@ k(emptytozero) = {0} ;
 k = cell2mat(k);
 
 % amount of roi's in bigger brain area
-for i=1:length(k);
-    if k(i)>=1;
+for i=1:length(k)
+    if k(i)>=1
        k(i)=1;
     end
 end
@@ -115,7 +118,7 @@ Total=[Total; name,k2];
 %% Plotting selection of areas
 
 Total2 = cell2mat(Total(:,2));
-figure(2)
+figure
 barh(Total2,'FaceColor',[0.82 0.33 0.33],'EdgeColor', 'none', 'BarWidth', .6)
 yticklabels(Total(:,1))
 set(gca,'FontSize', 12, 'Fontname', 'Calibri')
