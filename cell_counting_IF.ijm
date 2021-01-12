@@ -12,10 +12,13 @@ for(i=0;i<files.length;i++){
 	   // run("Threshold...");
 	    //setAutoThreshold("MaxEntropy dark");
 		//setThreshold(161, 175);
-		
-		run("Threshold...");
+
+		run("Split Channels");
+//		files_split_string = split(files[i], ".");
+        selectWindow(files[i]+ " (red)");
+//		run("Threshold...");
 		setAutoThreshold("MaxEntropy dark");
-		waitForUser("set threshold");
+//		waitForUser("set threshold");
 		
 		run("Set Measurements...", "centroid nan redirect=None decimal=0");
         run("Analyze Particles...", "size=0-400 pixel circularity=0-1.00 Include holes display clear add");
