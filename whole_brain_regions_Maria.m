@@ -8,6 +8,10 @@
 % roi_table = cell2table(roi_table); 
 % clear everything
 % clear TEXT
+processed_folder = uigetdir('', 'Select processed folder');
+load(fullfile(processed_folder, 'roi_table_all'))
+load(fullfile(processed_folder, 'pixel_table_all'))
+load(fullfile(processed_folder, 'pername_table'))
 
 roi_table = roi_table_all ; %change this if necessary 
 c = roi_table(:,1); % creates a variable with a list of every cell in a brain region
@@ -58,11 +62,12 @@ set(gca,'Color','w')
 
 
 %% plot the areas with more neurons (selection)
-index = 98:108; % change here depending on how long the list is, how many areas
+% index = 98:108; % change here depending on how long the list is, how many areas
+nTop = 10;
 
-X_max = X(index,:); 
-sorted_table_max = sorted_table_brain_areas(index,:);
-list3 = list2(index,:); 
+X_max = X(end-nTop:end,:); 
+sorted_table_max = sorted_table_brain_areas(end-nTop:end,:);
+list3 = list2(end-nTop:end,:); 
 X_max = cellstr(X_max);
 X_max = cell2table(X_max);
 X_max = table2array(X_max);
@@ -129,6 +134,6 @@ box('off');
 
 
 %Change xlim if necessary!!!!
-xlim([0 400]);
+% xlim([0 400]);
 
 

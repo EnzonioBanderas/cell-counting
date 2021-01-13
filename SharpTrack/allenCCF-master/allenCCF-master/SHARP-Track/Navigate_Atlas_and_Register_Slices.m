@@ -9,7 +9,7 @@
 % directory of histology
 
 % processed_images_folder = 'D:\Fabian_stainings\Exported pictures of WT brain for Maria\2'; 
-processed_images_folder = uigetdir('', 'select processed images folder');
+processed_images_folder = uigetdir('' , 'select processed images folder');
 
 % name the saved probe points, to avoid overwriting another set of probes going in the same folder
 probe_save_name_suffix = ''; 

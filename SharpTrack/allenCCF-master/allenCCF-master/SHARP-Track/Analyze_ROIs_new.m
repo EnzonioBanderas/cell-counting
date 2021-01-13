@@ -7,6 +7,9 @@ clearvars;
 % Specify the folder where the files live 
 % Folder = 'D:\Fabian_stainings\20201126_Pax5 staining with signal amplification\pax5_IF_amp\test2\transformations'; 
 transformations_folder = uigetdir('', 'Select transformations folder');
+processed_folder = fullfile(transformations_folder, '..');
+roifused_folder = fullfile(processed_folder, 'roifused_folder');
+mkdir(roifused_folder)
 
 % Get a list of all files in the folder with the desired file name pattern and open them. 
 filePattern_transfrom = fullfile(transformations_folder, '*.mat'); 
@@ -49,6 +52,7 @@ for k = 1 : length(Files_transfrom)
 
     % load the transformed slice image
     transformed_slice_image = imread(transformed_slice_location);
+    transformed_slice_image = max(transformed_slice_image, [], 3); % take the maximum over RGB dim, assume only one channel contains all info
 
     % load the transform from the transform file
     transform_data = load(transform_location);
@@ -82,12 +86,13 @@ for k = 1 : length(Files_transfrom)
     % Do this for every *pixel* in the roi image with nonzero value, but
     % this code can be modified, e.g. to do it by clusters of pixels
 
-    figure; 
+    FIG = figure; 
     imshow(imfuse(roi_array, transformed_slice_image));
     title('transformed slice image, fused with ROIs')
+    saveas(FIG, fullfile(roifused_folder, ['roifused_', 's', sprintf('%02d', k)]), 'tif')
 
-    figure;
-    imshow(imfuse(roi_array, roi_array))
+%     figure;
+%     imshow(imfuse(roi_array, roi_array))
 
     % make sure the rois are in a properly size image
     %assert(size(rois,1)==800&size(rois,2)==1140&size(rois,3)==1,'roi image is
@@ -188,12 +193,14 @@ for k = 1 : length(Files_transfrom)
                 roi_location(:,1),roi_location(:,2),roi_location(:,3), roi_annotation(:,1), ...
     'VariableNames', {'name', 'acronym', 'AP_location', 'DV_location', 'ML_location', 'avIndex'});
 
+    close(FIG);
+
 end
 
 roi_table_all = vertcat(roi_table{:});
-save('roi_table_all_test2', 'roi_table_all'); %change first input to whatever name you want 
+save(fullfile(processed_folder, 'roi_table_all'), 'roi_table_all'); %change first input to whatever name you want 
 pixel_table_all = vertcat(pixel_table{:});
-save('pixel_table_all_test2', 'pixel_table_all'); %change first input to whatever name you want 
+save(fullfile(processed_folder, 'pixel_table_all'), 'pixel_table_all'); %change first input to whatever name you want 
 
 % count number of ROIs per name and number of total pixels and total
 % intensity (probably per mouse normalization necessary)
@@ -220,7 +227,7 @@ pername_table.roi_count(isnan(pername_table.roi_count)) = 0;
 pername_table.roi_count_perpixel = pername_table.roi_count ./ pername_table.pixel_count;
 [~, sort_idx] = sort(pername_table.roi_count_perpixel, 'descend');
 pername_table = pername_table(sort_idx, :);
-save('pername_table', 'pername_table');
+save(fullfile(processed_folder, 'pername_table'), 'pername_table');
 
 % function location2meta(xPixel, yPixel, offset_map, slice_num)
 %     % get the offset from the AP value at the centre of the slice, due to
