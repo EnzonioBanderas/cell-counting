@@ -6,9 +6,21 @@
 clearvars; 
 % Specify the folder where the files live 
 % Folder = 'D:\Fabian_stainings\20201126_Pax5 staining with signal amplification\pax5_IF_amp\test2\transformations'; 
+
 transformations_folder = uigetdir('', 'Select transformations folder');
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% tfa = {'D:\Users\enzo\Documents\Projects\MEP\cell-counting\Immunostainings_Pax5\20201215_Pax5++_2B#10\processed\transformations', ...
+%     'D:\Users\enzo\Documents\Projects\MEP\cell-counting\Immunostainings_Pax5\20201215_Pax5++_2B#10\processed\transformations_RenyiEntropy', ...
+%     'D:\Users\enzo\Documents\Projects\MEP\cell-counting\Immunostainings_Pax5\20201215_Pax5++_2B#10\processed\transformations_Shanbhag', ...
+%     'D:\Users\enzo\Documents\Projects\MEP\cell-counting\Immunostainings_Pax5\20201215_Pax5++_2B#10\processed\transformations_Yen'};
+% for iTfa = 1:length(tfa)
+% 
+% transformations_folder = tfa{iTfa};
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 processed_folder = fullfile(transformations_folder, '..');
-roifused_folder = fullfile(processed_folder, 'roifused_folder');
+roifused_folder = fullfile(transformations_folder, 'roifused_folder');
 mkdir(roifused_folder)
 
 % Get a list of all files in the folder with the desired file name pattern and open them. 
@@ -198,9 +210,11 @@ for k = 1 : length(Files_transfrom)
 end
 
 roi_table_all = vertcat(roi_table{:});
-save(fullfile(processed_folder, 'roi_table_all'), 'roi_table_all'); %change first input to whatever name you want 
+% save(fullfile(processed_folder, 'roi_table_all'), 'roi_table_all'); %change first input to whatever name you want 
+writetable(roi_table_all, fullfile(processed_folder, 'roi_table_all.csv'));
 pixel_table_all = vertcat(pixel_table{:});
-save(fullfile(processed_folder, 'pixel_table_all'), 'pixel_table_all'); %change first input to whatever name you want 
+% save(fullfile(processed_folder, 'pixel_table_all'), 'pixel_table_all'); %change first input to whatever name you want 
+writetable(pixel_table_all, fullfile(processed_folder, 'pixel_table_all.csv'));
 
 % count number of ROIs per name and number of total pixels and total
 % intensity (probably per mouse normalization necessary)
@@ -227,7 +241,10 @@ pername_table.roi_count(isnan(pername_table.roi_count)) = 0;
 pername_table.roi_count_perpixel = pername_table.roi_count ./ pername_table.pixel_count;
 [~, sort_idx] = sort(pername_table.roi_count_perpixel, 'descend');
 pername_table = pername_table(sort_idx, :);
-save(fullfile(processed_folder, 'pername_table'), 'pername_table');
+% save(fullfile(processed_folder, 'pername_table.csv'), 'pername_table');
+writetable(pername_table, fullfile(processed_folder, 'pername_table.csv'));
+
+
 
 % function location2meta(xPixel, yPixel, offset_map, slice_num)
 %     % get the offset from the AP value at the centre of the slice, due to
@@ -248,5 +265,14 @@ save(fullfile(processed_folder, 'pername_table'), 'pername_table');
 %     acr = st.acronym{ann};
 % end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+% load('pixel_table_all.mat')
+% load('roi_table_all.mat')
+% load('pername_table.mat')
+% writetable(pername_table, 'pername_table.csv');
+% writetable(pixel_table_all, 'pixel_table_all.csv');
+% writetable(roi_table_all, 'roi_table_all.csv');
 
