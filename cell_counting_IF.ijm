@@ -17,7 +17,13 @@ for(i=0;i<files.length;i++){
 //		files_split_string = split(files[i], ".");
         selectWindow(files[i]+ " (red)");
 //		run("Threshold...");
+//		MaxEntropy RenyiEntropy Shanbhag Yen
+
 		setAutoThreshold("MaxEntropy dark");
+//		setAutoThreshold("RenyiEntropy dark");
+//		setAutoThreshold("Shanbhag dark");
+//		setAutoThreshold("Yen dark");
+
 //		waitForUser("set threshold");
 		
 		run("Set Measurements...", "centroid nan redirect=None decimal=0");
