@@ -1,9 +1,9 @@
-dir = getDirectory("Choose a Directory");
+dir = getDirectory("Choose a Original Directory");
 files = getFileList(dir);
 
 for(i=0;i<files.length;i++){
 	shortname = substring(files[i],0,indexOf(files[i],"."));
-	if (endsWith (files[i], "AF594.tif"))
+	if (endsWith (files[i], ".tif"))
 	
 	   {
 		

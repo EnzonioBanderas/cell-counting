@@ -1,4 +1,4 @@
-function f = allenAtlasBrowser(f, templateVolume, annotationVolume, structureTree, slice_figure, save_location, save_suffix)
+function f = AtlasTransformBrowser(f, templateVolume, annotationVolume, structureTree, slice_figure, save_location, save_suffix)
 % ------------------------------------------------
 % Browser for the allen atlas ccf data in matlab.
 % ------------------------------------------------
@@ -646,6 +646,17 @@ if strcmp(key_letter,'x')
             disp('transform not saved')
         end
 end
+% y -- save current CData image
+if strcmp(key_letter,'y') 
+        try
+        processed_folder_fileparts = split(save_location, filesep);
+        imwrite(ud.im.CData, fullfile(save_location, '..', '..', '..', 'figures', 'slices_and_overlays', ...
+            [processed_folder_fileparts{end-1}, '_', datestr(datetime), '.tif']));
+        disp('image saved')
+        catch
+            disp('image not saved')
+        end
+end
         
 set(f, 'UserData', ud);
 
@@ -931,12 +942,14 @@ function updateBoundaries(f, ud, allData)
     shifted_atlas_horz2(:,1:end-2) = atlas_horz_offset;
 
     shifted_atlas = shifted_atlas_horz1 + shifted_atlas_horz2 + shifted_atlas_vert1 + shifted_atlas_vert2;
-
+    
     atlas_boundaries = (shifted_atlas>0); ud.atlas_boundaries = atlas_boundaries;
 
     if ud.showAtlas
         image_blend =  uint8( imfuse(ud.curr_im, atlas_boundaries/3.5*(1+.35*isa(ud.curr_im,'uint16')),'blend','Scaling','none') )* 2;
-        set(ud.im, 'CData', image_blend); 
+%         image_blend =  uint8( imfuse(ud.curr_im*0, atlas_boundaries/3.5*(1+.35*isa(ud.curr_im,'uint16')),'blend','Scaling','none') )* 4;
+%         image_blend =  atlas_boundaries/3.5*(1+.35*isa(ud.curr_im,'uint16'));
+        set(ud.im, 'CData', image_blend);
     end
     
     set(f, 'UserData', ud);

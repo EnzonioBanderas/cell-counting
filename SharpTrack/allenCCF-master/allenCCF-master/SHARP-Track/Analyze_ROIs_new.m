@@ -115,6 +115,7 @@ for k = 1 : length(Files_transfrom)
     % reference space and the correponding region annotations
     roi_location = zeros(sum(roi_array(:)>0),3);
     roi_annotation = cell(sum(roi_array(:)>0),3);
+    roi_annotation_fn = cell(sum(roi_array(:)>0),1);
 
     % get location and annotation for every roi pixel
     [pixels_row, pixels_column] = find(roi_array>0);
@@ -198,22 +199,29 @@ for k = 1 : length(Files_transfrom)
         roi_annotation{pixel,1} = ann;
         roi_annotation{pixel,2} = name;
         roi_annotation{pixel,3} = acr;
+        
+        % Add slice file name to ROI entry
+        roi_annotation_fn{pixel} = baseFileName_transform;
 
     end
 
     roi_table{k} = table(roi_annotation(:,2),roi_annotation(:,3), ...
-                roi_location(:,1),roi_location(:,2),roi_location(:,3), roi_annotation(:,1), ...
-    'VariableNames', {'name', 'acronym', 'AP_location', 'DV_location', 'ML_location', 'avIndex'});
+        roi_location(:,1),roi_location(:,2),roi_location(:,3), roi_annotation(:,1), ...
+        roi_annotation_fn, ...
+        'VariableNames', {'name', 'acronym', ...
+        'AP_location', 'DV_location', 'ML_location', 'avIndex', ...
+        'filename'});
 
     close(FIG);
 
 end
 
+% Concatenate and save data tables
 roi_table_all = vertcat(roi_table{:});
-% save(fullfile(processed_folder, 'roi_table_all'), 'roi_table_all'); %change first input to whatever name you want 
+save(fullfile(processed_folder, 'roi_table_all.mat'), 'roi_table_all'); %change first input to whatever name you want 
 writetable(roi_table_all, fullfile(processed_folder, 'roi_table_all.csv'));
 pixel_table_all = vertcat(pixel_table{:});
-% save(fullfile(processed_folder, 'pixel_table_all'), 'pixel_table_all'); %change first input to whatever name you want 
+save(fullfile(processed_folder, 'pixel_table_all.mat'), 'pixel_table_all'); %change first input to whatever name you want 
 writetable(pixel_table_all, fullfile(processed_folder, 'pixel_table_all.csv'));
 
 % count number of ROIs per name and number of total pixels and total
@@ -241,7 +249,9 @@ pername_table.roi_count(isnan(pername_table.roi_count)) = 0;
 pername_table.roi_count_perpixel = pername_table.roi_count ./ pername_table.pixel_count;
 [~, sort_idx] = sort(pername_table.roi_count_perpixel, 'descend');
 pername_table = pername_table(sort_idx, :);
-% save(fullfile(processed_folder, 'pername_table.csv'), 'pername_table');
+
+% Save table with one entry for each structure
+save(fullfile(processed_folder, 'pername_table.mat'), 'pername_table');
 writetable(pername_table, fullfile(processed_folder, 'pername_table.csv'));
 
 
