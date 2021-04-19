@@ -4,20 +4,28 @@
 % ------------------------------------------------------------------------
 
 clearvars; 
-% Specify the folder where the files live 
-% Folder = 'D:\Fabian_stainings\20201126_Pax5 staining with signal amplification\pax5_IF_amp\test2\transformations'; 
 
-transformations_folder = uigetdir('', 'Select transformations folder');
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% transformations_folder = uigetdir('', 'Select transformations folder');
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+data_path = '/mnt/tosh/Projects/MEP/cell-counting/Immunostainings_Pax5_mergedSelectionMaria';
+tfa_struct = dir(data_path);
+tfa_struct = tfa_struct([tfa_struct.isdir]);
+nTfa = length(tfa_struct);
+tfa = cell(1, nTfa);
+for iTfa = 3:nTfa
+    tfa{iTfa} = fullfile(data_path, tfa_struct(iTfa).name, '/processed/transformations');
+end
+tfa= tfa(3:end);
+% tfa = {'/mnt/tosh/Projects/MEP/cell-counting/Immunostainings_Pax5_extra/20210320_Pax5+-_2A#05_M2_DAPI,TH-AF488,Pax5-Ampl-AF594-01/processed/transformations', ...
+%     '/mnt/tosh/Projects/MEP/cell-counting/Immunostainings_Pax5_extra/20210322_Pax5-pR31Q-_2B#03_M6_DAPI,TH-AF488,Pax5-Ampl-AF594-01/processed/transformations', ...
+%     '/mnt/tosh/Projects/MEP/cell-counting/Immunostainings_Pax5_extra/20210325_Pax5++_2B#10_M9_DAPI,TH-AF488,Pax5-Ampl-AF594-01/processed/transformations'};
+for iTfa = 1:length(tfa)
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% tfa = {'D:\Users\enzo\Documents\Projects\MEP\cell-counting\Immunostainings_Pax5\20201215_Pax5++_2B#10\processed\transformations', ...
-%     'D:\Users\enzo\Documents\Projects\MEP\cell-counting\Immunostainings_Pax5\20201215_Pax5++_2B#10\processed\transformations_RenyiEntropy', ...
-%     'D:\Users\enzo\Documents\Projects\MEP\cell-counting\Immunostainings_Pax5\20201215_Pax5++_2B#10\processed\transformations_Shanbhag', ...
-%     'D:\Users\enzo\Documents\Projects\MEP\cell-counting\Immunostainings_Pax5\20201215_Pax5++_2B#10\processed\transformations_Yen'};
-% for iTfa = 1:length(tfa)
-% 
-% transformations_folder = tfa{iTfa};
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+transformations_folder = tfa{iTfa};
+tfa_split = strsplit(transformations_folder, filesep);
+subject = tfa_split{end-2};
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 processed_folder = fullfile(transformations_folder, '..');
 roifused_folder = fullfile(transformations_folder, 'roifused_folder');
@@ -45,8 +53,8 @@ for k = 1 : length(Files_transfrom)
     baseFileName_slice = Files_slice(k).name; 
     transformed_slice_location = fullfile(Files_slice(k).folder, baseFileName_slice);
 
-    baseFileName_slice = Files_roi(k).name; 
-    roi_array_values = csvread((fullfile(Files_slice(k).folder, baseFileName_slice)),1,1);
+    baseFileName_roitable = Files_roi(k).name; 
+    roi_array_values = csvread((fullfile(Files_slice(k).folder, baseFileName_roitable)),1,1);
     % Using a set of x and y coordinates from the ImageJ function Analyze Particles to generate an ROI image
     roi_array = zeros(800,1140,'uint8');
     x = roi_array_values(:, 2); % IMPORTANT: the x and y coordinates have to be changed bc the images are 1140x800 and the reference atlas is 800x1140.
@@ -102,9 +110,16 @@ for k = 1 : length(Files_transfrom)
     imshow(imfuse(roi_array, transformed_slice_image));
     title('transformed slice image, fused with ROIs')
     saveas(FIG, fullfile(roifused_folder, ['roifused_', 's', sprintf('%02d', k)]), 'tif')
+    
+%     FIG2 = figure; 
+%     roi_array_copy = roi_array;
+%     roi_array_copy(:) = 0;
+%     imshow(imfuse(roi_array_copy, transformed_slice_image));
+%     title('transformed slice image')
+%     saveas(FIG2, fullfile(roifused_folder, ['notroifused_', 's', sprintf('%02d', k)]), 'tif')
 
 %     figure;
-%     imshow(imfuse(roi_array, roi_array))
+%     imshow(imfuse(roi_transformed_slice_imagearray, roi_array))
 
     % make sure the rois are in a properly size image
     %assert(size(rois,1)==800&size(rois,2)==1140&size(rois,3)==1,'roi image is
@@ -155,26 +170,42 @@ for k = 1 : length(Files_transfrom)
             % finally, find the annotation, name, and acronym of the current ROI
             % pixel
             ann = av(slice_num+offset, iX, iY);
-            name = st.safe_name{ann};
-            acr = st.acronym{ann};
+%             name = st.safe_name{ann};
+%             acr = st.acronym{ann};
 
             pixel_annotation{iPixel,1} = ann;
-            pixel_annotation{iPixel,2} = name;
-            pixel_annotation{iPixel,3} = acr;
+%             pixel_annotation{iPixel,2} = name;
+%             pixel_annotation{iPixel,3} = acr;
         end
     end
+    
+    % Per structure only look once for name and acronym
+    [uniqAnn, ~, uniqAnnInd] = unique([pixel_annotation{:,1}]);
+    uniqAnn_length = length(uniqAnn);
+    uniqAnn_name = cell(uniqAnn_length, 1);
+    uniqAnn_acr = cell(uniqAnn_length, 1);
+    for iAnn = 1:uniqAnn_length
+        ann = uniqAnn(iAnn);
+        uniqAnn_name{iAnn} = st.safe_name{ann};
+        uniqAnn_acr{iAnn} = st.acronym{ann};
+    end
+    pixel_annotation(:,2) = {uniqAnn_name{uniqAnnInd}};
+    pixel_annotation(:,3) = {uniqAnn_acr{uniqAnnInd}};
+    
     all_pixel_table = table(pixel_annotation(:,2), pixel_annotation(:,3), ...
                 pixel_location(:,1), pixel_location(:,2), pixel_location(:,3), pixel_annotation(:,1), ...
-                signal_vec, ...
-    'VariableNames', {'name', 'acronym', 'AP_location', 'DV_location', 'ML_location', 'avIndex', 'signal'});
+                signal_vec, repmat({baseFileName_slice}, [length(signal_vec), 1]), ...
+    'VariableNames', {'name', 'acronym', 'AP_location', 'DV_location', 'ML_location', 'avIndex', 'signal', 'slice_name'});
     [uniq, uniq_idx, or_idx] = unique(all_pixel_table.name);
     pixel_count = accumarray(or_idx(:), 1, [], @sum);
     signal_sum = accumarray(or_idx(:), all_pixel_table.signal, [], @sum);
     
-    pixel_table{k} = table(uniq, all_pixel_table.acronym(uniq_idx), ...
+    pixel_table{k} = table(all_pixel_table.slice_name(uniq_idx), ...
+                uniq, all_pixel_table.acronym(uniq_idx), ...
                 all_pixel_table.avIndex(uniq_idx), ...
                 pixel_count, signal_sum, ...
-    'VariableNames', {'name', 'acronym', 'avIndex', 'pixel_count', 'signal_sum'});
+    'VariableNames', {'slice_name', 'name', 'acronym', 'avIndex', ...
+        'pixel_count', 'signal_sum'});
 
     % loop through every pixel to get ROI locations and region annotations
     for pixel = 1:length(pixels_row)
@@ -224,6 +255,18 @@ pixel_table_all = vertcat(pixel_table{:});
 save(fullfile(processed_folder, 'pixel_table_all.mat'), 'pixel_table_all'); %change first input to whatever name you want 
 writetable(pixel_table_all, fullfile(processed_folder, 'pixel_table_all.csv'));
 
+% Save table with number of slice per structure
+n_slice_name = rowfun(@(v) numel(unique(v)), pixel_table_all, 'GroupingVariables', {'name', 'acronym'}, 'InputVariables', 'slice_name');
+n_slice_table = table(n_slice_name.name, ...
+            n_slice_name.acronym, ...
+            n_slice_name.GroupCount, ...
+            'VariableNames', {'name', 'acronym', 'n_slice'});
+save(fullfile(processed_folder, 'n_slice_table.mat'), 'n_slice_table'); %change first input to whatever name you want 
+writetable(n_slice_table, fullfile(processed_folder, 'n_slice_table.csv'));
+% [name_uniq, ~, name_uniq_ind] = unique(pixel_table_all.name);
+% [slice_name_uniq, ~, slice_name_ind] = unique(pixel_table_all.slice_name);
+% accumarray(slice_name_ind, name_uniq_ind, [], @(v)numel(unique(v)))
+
 % count number of ROIs per name and number of total pixels and total
 % intensity (probably per mouse normalization necessary)
 [uniq, uniq_idx, or_idx] = unique(roi_table_all.name);
@@ -256,6 +299,7 @@ writetable(pername_table, fullfile(processed_folder, 'pername_table.csv'));
 
 
 
+
 % function location2meta(xPixel, yPixel, offset_map, slice_num)
 %     % get the offset from the AP value at the centre of the slice, due to
 %     % off-from-coronal angling
@@ -275,9 +319,9 @@ writetable(pername_table, fullfile(processed_folder, 'pername_table.csv'));
 %     acr = st.acronym{ann};
 % end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% end
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % load('pixel_table_all.mat')
 % load('roi_table_all.mat')
