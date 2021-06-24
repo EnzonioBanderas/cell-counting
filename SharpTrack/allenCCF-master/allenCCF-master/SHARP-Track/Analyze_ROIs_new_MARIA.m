@@ -110,7 +110,7 @@ for k = 1 : length(Files_transfrom)
     FIG = figure; 
     imshow(imfuse(roi_array, transformed_slice_image));
     title('transformed slice image, fused with ROIs')
-    saveas(FIG, fullfile(roifused_folder, [baseFileName_slice, '_roifused_', 's', sprintf('%02d', k)]), 'tif')
+    saveas(FIG, fullfile(roifused_folder, ['roifused_', 's', sprintf('%02d', k)]), 'tif')
     
 %     FIG2 = figure; 
 %     roi_array_copy = roi_array;

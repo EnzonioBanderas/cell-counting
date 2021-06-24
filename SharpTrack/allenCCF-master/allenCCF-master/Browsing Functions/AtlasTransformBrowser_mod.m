@@ -1,4 +1,4 @@
-function [f, ud] = AtlasTransformBrowser(f, templateVolume, annotationVolume, structureTree, slice_figure, save_location, save_suffix)
+function f = AtlasTransformBrowser(f, templateVolume, annotationVolume, structureTree, slice_figure, save_location, save_suffix)
 % ------------------------------------------------
 % Browser for the allen atlas ccf data in matlab.
 % ------------------------------------------------
@@ -439,9 +439,6 @@ switch key_letter
                     ud.curr_slice_trans = imwarp(current_slice_image, ud.transform, 'OutputView',R);
                 end
             
-                ref = ud.ref;
-                curr_slice_trans = ud.curr_slice_trans;
-                save('ud.mat', 'ref', 'curr_slice_trans');
                 image_blend =  imfuse(uint8(ud.ref*.6), ud.curr_slice_trans(:,:,:),'blend','Scaling','none');
                 if ud.histology_overlay == 2 % 2 ~ blend
                     disp('Slice + Reference mode!');
@@ -649,16 +646,18 @@ if strcmp(key_letter,'x')
             disp('transform not saved')
         end
 end
-% y -- save current CData image
+% x -- save transform and current slice position and angle
 if strcmp(key_letter,'y') 
         try
-        processed_folder_fileparts = split(save_location, filesep);
-        imwrite(ud.im.CData, fullfile(save_location, '..', '..', '..', 'figures', 'slices_and_overlays', ...
-            [processed_folder_fileparts{end-1}, '_', datestr(datetime), '.tif']));
+        processed_folder_fileparts = split(processed_images_folder, filesep);
+        imwrite(ud.im.CData, fullfile(save_location, '..', '..', 'figures', 'slices_and_overlays', [processed_folder_fileparts{end-1}, datestr(datetime), '.tif']));
+
         disp('image saved')
         catch
             disp('image not saved')
         end
+end
+
 end
         
 set(f, 'UserData', ud);
@@ -902,6 +901,8 @@ if ud.probe_view_mode && ud.currentProbe
     
 end
   set(f, 'UserData', ud);
+  
+end
 
 % ---------------------------------------------------------------
 % update the image shown if histology is currently being overlaid
@@ -916,7 +917,7 @@ function updateHistology(f, ud)
         ud.curr_im = ud.curr_slice_trans;
     end
     set(f, 'UserData', ud);
-
+end
     
 % -------------------------------------------------    
 % update the position of the region boundary image
@@ -949,14 +950,13 @@ function updateBoundaries(f, ud, allData)
     atlas_boundaries = (shifted_atlas>0); ud.atlas_boundaries = atlas_boundaries;
 
     if ud.showAtlas
-        image_blend =  uint8( imfuse(ud.curr_im, atlas_boundaries/3.5*(1+.35*isa(ud.curr_im,'uint16')),'blend','Scaling','none') )* 2;
-%         image_blend =  uint8( imfuse(ud.curr_im*0, atlas_boundaries/3.5*(1+.35*isa(ud.curr_im,'uint16')),'blend','Scaling','none') )* 4;
+        image_blend =  uint8( imfuse(ud.curr_im*0, atlas_boundaries/3.5*(1+.35*isa(ud.curr_im,'uint16')),'blend','Scaling','none') )* 4;
 %         image_blend =  atlas_boundaries/3.5*(1+.35*isa(ud.curr_im,'uint16'));
         set(ud.im, 'CData', image_blend);
     end
     
     set(f, 'UserData', ud);
-    
+end
 % ----------------
 % react to clicks
 % ----------------
@@ -1027,6 +1027,7 @@ elseif ud.getPoint_for_transform
     ud.clicked = true;
 end
 set(f, 'UserData', ud);
+end
 
 % ------------------------
 % react to mouse hovering
@@ -1066,7 +1067,7 @@ if ~isempty(name)
         updateOverlay(f, allData, ann, slice_figure, save_location)
     end    
 end
-
+end
 % ---------------------------------------------
 % update the coordinates shown in the top left
 % ---------------------------------------------
@@ -1077,7 +1078,7 @@ dv = (pixel(1)-bregma(2))*atlasRes;
 ml = (pixel(2)-bregma(3))*atlasRes;
 set(bregmaText, 'String', sprintf('%.2f AP, %.2f DV, %.2f ML', ap, dv, ml));
 set(angleText, 'String', ['Slice ' num2str((bregma(1) - slice_num)/100) ' AP, DV angle ' num2str(round(atand(ap_angle/(ref_size(1)/2)),1)) '^{\circ}, ML angle ' num2str(round(atand(ml_angle/570),1)) '^{\circ}']);
-
+end
 % ---------------------------------
 % update the current mouse location
 % ---------------------------------
@@ -1087,7 +1088,7 @@ currPoint = get(ax,'currentpoint');  % The current point w.r.t the axis.
 
 Cx = currPoint(1,1); Cy = currPoint(1,2);
 pixel = round([Cy Cx]);
-
+end
 % ---------------------------------
 % update the overlaid brain region
 % ---------------------------------
@@ -1117,7 +1118,7 @@ else
     set(ovIm, 'ButtonDownFcn', @(f,k)atlasClickCallback(f, k, slice_figure, save_location));
 
 end
-
+end
 % ---------------------------------
 % find the region being hovered on
 % ---------------------------------
@@ -1129,7 +1130,7 @@ if pixel(1)>0&&pixel(1)<size(allData.av,2) && pixel(2)>0&&pixel(2)<=size(allData
 else
     ann = []; name = []; acr = [];
 end
-
+end
 % ---------------------------------
 % update the title, showing region
 % ---------------------------------
@@ -1138,4 +1139,7 @@ if ~isempty(name)
     title(ax, [name{1} ' (' acr{1} ')']);
 else
     title(ax, 'not found');
+end
+end
+end
 end

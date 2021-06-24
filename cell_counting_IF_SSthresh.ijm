@@ -18,6 +18,9 @@ for(i=0;i<files.length;i++){
 		
 		shortname = substring(files[i],0,indexOf(files[i],"."));
 		print(shortname);
+		structureStack_name = shortname+"_structureStack.tif";
+		structureStack_path = dir+dirs[u]+"processed"+File.separator+"transformations"+File.separator+"structure_stacks"+File.separator+structureStack_name;
+		open(structureStack_path);
 		main = dir+dirs[u]+"processed"+File.separator+"transformations"+File.separator+files[i];
 		open(main);
 	    
@@ -34,20 +37,27 @@ for(i=0;i<files.length;i++){
 //		run("Threshold...");
 //		MaxEntropy RenyiEntropy Shanbhag Yen
 
-//		setAutoThreshold("MaxEntropy dark");
-		run("Auto Threshold", "method=MaxEntropy ignore_black white");
-//  	setAutoThreshold("RenyiEntropy dark");
-//		setAutoThreshold("Shanbhag dark");
-//		setAutoThreshold("Yen dark");
+		selectWindow(structureStack_name);
+		for (s = 1; s <= nSlices; s++) {
+			selectWindow(structureStack_name);
+		    setSlice(s);
 
-//		waitForUser("set threshold");
-		
-		run("Set Measurements...", "centroid nan redirect=None decimal=0");
-        run("Analyze Particles...", "size=0-50 pixel circularity=0-1.00 Include holes display clear add");
+			imageCalculator("AND create", main_red, structureStack_name);
 
-        close();
-	    // do something here;
-		    
+	//		setAutoThreshold("MaxEntropy dark");
+			run("Auto Threshold", "method=MaxEntropy ignore_black white");
+	//		setAutoThreshold("RenyiEntropy dark");
+	//		setAutoThreshold("Shanbhag dark");
+	//		setAutoThreshold("Yen dark");
+	
+	//		waitForUser("set threshold");
+			
+			run("Set Measurements...", "centroid nan redirect=None decimal=0");
+	        run("Analyze Particles...", "size=0-50 pixel circularity=0-1.00 Include holes display add");
+
+	        close();
+	        close("Exception");
+		}
 		saveAs("Results", dir+dirs[u]+"processed"+File.separator+"transformations"+File.separator+ shortname+ ".csv");
 		run("Clear Results");
 		roiManager("Delete");

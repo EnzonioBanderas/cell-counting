@@ -1,4 +1,4 @@
-function [f, ud] = AtlasTransformBrowser(f, templateVolume, annotationVolume, structureTree, slice_figure, save_location, save_suffix)
+function f = AtlasTransformBrowser(f, templateVolume, annotationVolume, structureTree, slice_figure, save_location, save_suffix)
 % ------------------------------------------------
 % Browser for the allen atlas ccf data in matlab.
 % ------------------------------------------------
@@ -439,9 +439,6 @@ switch key_letter
                     ud.curr_slice_trans = imwarp(current_slice_image, ud.transform, 'OutputView',R);
                 end
             
-                ref = ud.ref;
-                curr_slice_trans = ud.curr_slice_trans;
-                save('ud.mat', 'ref', 'curr_slice_trans');
                 image_blend =  imfuse(uint8(ud.ref*.6), ud.curr_slice_trans(:,:,:),'blend','Scaling','none');
                 if ud.histology_overlay == 2 % 2 ~ blend
                     disp('Slice + Reference mode!');
@@ -648,17 +645,56 @@ if strcmp(key_letter,'x')
         catch
             disp('transform not saved')
         end
-end
-% y -- save current CData image
+% x -- save transform and current slice position and angle
 if strcmp(key_letter,'y') 
+        
+        % find or create folder location for transformations
         try
-        processed_folder_fileparts = split(save_location, filesep);
-        imwrite(ud.im.CData, fullfile(save_location, '..', '..', '..', 'figures', 'slices_and_overlays', ...
-            [processed_folder_fileparts{end-1}, '_', datestr(datetime), '.tif']));
-        disp('image saved')
-        catch
-            disp('image not saved')
+        folder_transformations = fullfile(save_location, ['transformations' filesep]);
+        if ~exist(folder_transformations)
+            mkdir(folder_transformations)
         end
+    
+        % find name of slice
+        if ud.slice_shift || ud.slice_at_shift_start ~= ud_slice.slice_num
+            slice_name = ud_slice.processed_image_names{(ud.slice_at_shift_start+ud.slice_shift)}(1:end-4);
+        else
+            slice_name = ud_slice.processed_image_names{ud_slice.slice_num}(1:end-4);
+        end
+        
+
+        if isempty(ud.current_pointList_for_transform)
+            ud.transform = [];
+        end
+        % store transform, if applicable
+        save_transform.transform = ud.transform;
+        
+        % store transform points
+        transform_points = cell(2,1); transform_points{1} = ud.current_pointList_for_transform;
+        if ~isempty(ud_slice.pointList)
+            transform_points{2} = ud_slice.pointList;
+        end
+        
+        save_transform.transform_points = transform_points;
+        % store reference location
+        allen_location = cell(2,1); allen_location{1} = ud.currentSlice; allen_location{2} = ud.currentAngle; 
+        save_transform.allen_location = allen_location;
+        % save all this
+        save(fullfile(folder_transformations, [slice_name '_transform_data.mat']), 'save_transform');
+        disp('atlas location saved')
+        
+        % save transformed histology image
+        current_slice_image = imread(fullfile(save_location, [slice_name '.tif']));
+%         current_slice_image = flip(get(ud_slice.im, 'CData'),1);
+        R = imref2d(size(ud.ref));
+        curr_slice_trans = imwarp(current_slice_image, ud.transform, 'OutputView',R);
+        imwrite(curr_slice_trans, fullfile(folder_transformations, [slice_name '_transformed.tif']))
+        
+        disp('transform saved')
+        catch
+            disp('transform not saved')
+        end
+        imwrite(Subject_Assist_Quest, [save_location, '' filesep, 'Slices']);
 end
         
 set(f, 'UserData', ud);
@@ -949,8 +985,7 @@ function updateBoundaries(f, ud, allData)
     atlas_boundaries = (shifted_atlas>0); ud.atlas_boundaries = atlas_boundaries;
 
     if ud.showAtlas
-        image_blend =  uint8( imfuse(ud.curr_im, atlas_boundaries/3.5*(1+.35*isa(ud.curr_im,'uint16')),'blend','Scaling','none') )* 2;
-%         image_blend =  uint8( imfuse(ud.curr_im*0, atlas_boundaries/3.5*(1+.35*isa(ud.curr_im,'uint16')),'blend','Scaling','none') )* 4;
+        image_blend =  uint8( imfuse(ud.curr_im*0, atlas_boundaries/3.5*(1+.35*isa(ud.curr_im,'uint16')),'blend','Scaling','none') )* 4;
 %         image_blend =  atlas_boundaries/3.5*(1+.35*isa(ud.curr_im,'uint16'));
         set(ud.im, 'CData', image_blend);
     end
