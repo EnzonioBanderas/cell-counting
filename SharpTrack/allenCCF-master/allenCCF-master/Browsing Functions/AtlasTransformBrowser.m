@@ -349,7 +349,17 @@ switch key_letter
         else % return to image
             set(ud.im, 'CData', ud.curr_im)
         end
+          
+% q -- toggle viewing of annotation boundaries without showing background  
+    case 'q' 
         
+        ud.showAtlas = ~ud.showAtlas;
+        
+        if ud.showAtlas % superimpose boundaries           
+            updateBoundaries2(f,ud, allData);
+        else % return to image
+            set(ud.im, 'CData', ud.curr_im)
+        end
 % v -- toggle viewing of Color Atlas        
     case 'v' 
         ud.viewColorAtlas = ~ud.viewColorAtlas;
@@ -956,7 +966,45 @@ function updateBoundaries(f, ud, allData)
     end
     
     set(f, 'UserData', ud);
+% -------------------------------------------------    
+% update the position of the region boundary image
+% -------------------------------------------------
+function updateBoundaries2(f, ud, allData)
+    if ud.currentAngle(1) == 0 && ud.currentAngle(2) == 0
+        curr_annotation = squeeze(allData.av(ud.currentSlice,:,:));
+    else
+        curr_annotation = ud.im_annotation;
+    end
     
+    atlas_vert_1 = double(curr_annotation(1:end-2,:));
+    atlas_vert_2 = double(curr_annotation(3:end,:));
+    atlas_vert_offset = abs( atlas_vert_1 - atlas_vert_2 ) > 0;
+    shifted_atlas_vert1 = zeros(size(curr_annotation(:,:)));
+    shifted_atlas_vert1(3:end,:) = atlas_vert_offset;
+    shifted_atlas_vert2 = zeros(size(curr_annotation(:,:)));
+    shifted_atlas_vert2(1:end-2,:) = atlas_vert_offset;
+
+    atlas_horz_1 = double(curr_annotation(:,1:end-2));
+    atlas_horz_2 = double(curr_annotation(:,3:end));
+    atlas_horz_offset = abs( atlas_horz_1 - atlas_horz_2 )>0;
+    shifted_atlas_horz1 = zeros(size(curr_annotation(:,:)));
+    shifted_atlas_horz1(:,3:end) = atlas_horz_offset;
+    shifted_atlas_horz2 = zeros(size(curr_annotation(:,:)));
+    shifted_atlas_horz2(:,1:end-2) = atlas_horz_offset;
+
+    shifted_atlas = shifted_atlas_horz1 + shifted_atlas_horz2 + shifted_atlas_vert1 + shifted_atlas_vert2;
+    
+    atlas_boundaries = (shifted_atlas>0); ud.atlas_boundaries = atlas_boundaries;
+
+    if ud.showAtlas
+%         image_blend =  uint8( imfuse(ud.curr_im, atlas_boundaries/3.5*(1+.35*isa(ud.curr_im,'uint16')),'blend','Scaling','none') )* 2;
+        image_blend =  uint8( imfuse(ud.curr_im*0, atlas_boundaries/3.5*(1+.35*isa(ud.curr_im,'uint16')),'blend','Scaling','none') )* 4;
+%         image_blend =  atlas_boundaries/3.5*(1+.35*isa(ud.curr_im,'uint16'));
+        set(ud.im, 'CData', image_blend);
+    end
+    
+    set(f, 'UserData', ud);    
+
 % ----------------
 % react to clicks
 % ----------------
