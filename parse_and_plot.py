@@ -8,6 +8,7 @@ from statsmodels.stats.oneway import anova_oneway
 nIterBootstrap = 10000
 from statsmodels.stats.multitest import multipletests
 from scipy.stats import linregress
+import orthoregress
 
 
 
@@ -228,41 +229,42 @@ expressionMouseSelection_table_all.to_csv(os.path.join('pernameMouseSelection_Pa
 
 
 
-## Plotting
-# Figure 1: Expression of expSel structures
-fig1 = plt.figure()
-customPalette = [
-    (0.12156862745098039, 0.4666666666666667, 0.7058823529411765),
-    (0.17254901960784313, 0.6274509803921569, 0.17254901960784313),
-    (1.0, 0.4980392156862745, 0.054901960784313725)
-]
-ax1 = sns.boxplot(x="acronym",
-                  y="roi_count_permum3",
-                  hue="genotype",
-                  data=expression_table_selection,
-                  hue_order=['Pax5++', 'Pax5+-', 'Pax5-pR31Q-'],
-                  order=expression_selection_acronym_list,
-                  palette=customPalette)
-# sns.swarmplot(x="acronym",
-#               y="roi_count_permum3",
-#               hue="genotype",
-#               data=expression_table_selection,
-#               hue_order=['Pax5++', 'Pax5+-', 'Pax5-pR31Q-'],
-#               order=expression_selection_acronym_list,
-#               color='.25',
-#               dodge=0.4)
-ax1.set_xticklabels(ax1.get_xticklabels(), rotation=60)
-ax1.set(xlabel='structure acronym', ylabel='cell count per mum^3')
-handles, labels = ax1.get_legend_handles_labels()
-l = plt.legend(handles[0:3], labels[0:3])
-ax1.yaxis.grid(False) # Hide the horizontal gridlines
-ax1.xaxis.grid(True) # Show the vertical gridlines
-plt.show()
-plt.savefig('histo_selection_boxplot_mouse.png')
-expression_table_selection.to_csv('histo_selection_boxplot_mouse.csv')
-
-
-
+##########################################################
+# ## Plotting
+# # Figure 1: Expression of expSel structures
+# fig1 = plt.figure()
+# customPalette = [
+#     (0.12156862745098039, 0.4666666666666667, 0.7058823529411765),
+#     (0.17254901960784313, 0.6274509803921569, 0.17254901960784313),
+#     (1.0, 0.4980392156862745, 0.054901960784313725)
+# ]
+# ax1 = sns.boxplot(x="acronym",
+#                   y="roi_count_permum3",
+#                   hue="genotype",
+#                   data=expression_table_selection,
+#                   hue_order=['Pax5++', 'Pax5+-', 'Pax5-pR31Q-'],
+#                   order=expression_selection_acronym_list,
+#                   palette=customPalette)
+# # sns.swarmplot(x="acronym",
+# #               y="roi_count_permum3",
+# #               hue="genotype",
+# #               data=expression_table_selection,
+# #               hue_order=['Pax5++', 'Pax5+-', 'Pax5-pR31Q-'],
+# #               order=expression_selection_acronym_list,
+# #               color='.25',
+# #               dodge=0.4)
+# ax1.set_xticklabels(ax1.get_xticklabels(), rotation=60)
+# ax1.set(xlabel='structure acronym', ylabel='cell count per mum^3')
+# handles, labels = ax1.get_legend_handles_labels()
+# l = plt.legend(handles[0:3], labels[0:3])
+# ax1.yaxis.grid(False) # Hide the horizontal gridlines
+# ax1.xaxis.grid(True) # Show the vertical gridlines
+# plt.show()
+# plt.savefig('histo_selection_boxplot_mouse.png')
+# expression_table_selection.to_csv('histo_selection_boxplot_mouse.csv')
+#
+#
+#
 # Figure 2: Mouse Volumes of expSel structures
 fig2 = plt.figure()
 customPalette = [
@@ -280,9 +282,9 @@ ax2 = sns.barplot(x="acronym",
 ax2.set_xticklabels(ax2.get_xticklabels(), rotation=60)
 ax2.set(xlabel='structure acronym', ylabel='Normalized volume')
 plt.show()
-
-
-
+#
+#
+#
 # Figure 3 mouse old significant
 fig3 = plt.figure()
 mri_name_list = ['Substantia nigra, reticular part', 'Substantia nigra, compact part', 'Lobules IV-V',
@@ -326,9 +328,9 @@ handles, labels = ax3.get_legend_handles_labels()
 l = plt.legend(handles[0:2], labels[0:2])
 plt.savefig('mri_sig_boxplot_mouse.png')
 mouse_volume_table_selection.to_csv('mri_sig_boxplot_mouse.csv')
-
-
-
+#
+#
+#
 fig4 = plt.figure()
 name_selection_list = ['substantia nigra pars reticula',
                        'substantia nigra pars compacta',
@@ -370,441 +372,46 @@ ax4.set_xticklabels(['SNr', 'SNc', 'MRN', 'Left_I_IV', 'Right_I_IV', 'Left_V', '
 plt.show()
 plt.savefig('mri_sig_boxplot_human.png')
 human_volume_table_selection.to_csv('mri_sig_boxplot_human.csv')
-
-
-
-
-# Human SUIT volume overview plot
-fig5 = plt.figure()
-customPalette = [
-    (0.12156862745098039, 0.4666666666666667, 0.7058823529411765),
-    (1.0, 0.4980392156862745, 0.054901960784313725)
-]
-customPalette2 = [
-    (0.25, 0.25, 0.25),
-    (1.0, 0.4980392156862745, 0.054901960784313725)
-]
-human_volume_table_selection = human_volume_table[np.isin(human_volume_table['atlas'], ['Lobules-SUIT'])]
-human_volume_table_selection['genotype'] = 'control'
-human_volume_table_selection.loc[human_volume_table_selection['subject'] == 'patient', 'genotype'] = 'patient'
-plotAx_human_SUIT = sns.boxplot(x="name",
-                                y="VolumeNormalized",
-                                hue="genotype",
-                                data=human_volume_table_selection,
-                                hue_order=['control', 'patient'],
-                                palette=customPalette)
-plotAx_human_SUIT = sns.swarmplot(x="name",
-                                  y="VolumeNormalized",
-                                  hue="genotype",
-                                  data=human_volume_table_selection,
-                                  hue_order=['control', 'patient'],
-                                  palette=customPalette2,
-                                  dodge=0.4)
-# ax5.set_xticklabels(ax5.get_xticklabels(), rotation=60)
-plotAx_human_SUIT.set(xlabel='structure name', ylabel='Normalized volume')
-handles, labels = plotAx_human_SUIT.get_legend_handles_labels()
-l = plt.legend(handles[0:2], ['controls', 'patient'])
-# ax4.set_xticklabels(['SNr', 'SNc', 'MRN', 'Left_I_IV', 'Right_I_IV', 'Left_V', 'Right_V', 'Vermis_VII'])
-mng = plt.get_current_fig_manager()
-# mng.window.state('zoomed') #works fine on Windows!
-# mng.frame.Maximize(True)
-# mng.window.showMaximized
-plotAx_human_SUIT.set_xticklabels(['L_I-IV', 'R_I-IV', 'L_V', 'R_V',
-                     'L_VI', 'V_VI', 'R_VI',
-                     'L_CrusI', 'V_CrusI', 'R_CrusI',
-                     'L_CrusII', 'V_CrusII', 'R_CrusII',
-                     'L_VIIb', 'V_VIIb', 'R_VIIb',
-                     'L_VIIIa', 'V_VIIIa', 'R_VIIIa',
-                     'L_VIIIb', 'V_VIIIb', 'R_VIIIb',
-                     'L_IX', 'V_IX', 'R_IX',
-                     'L_X', 'V_X', 'R_X',
-                     'L_Dentate', 'R_Dentate', 'L_Interposed', 'R_Interposed',
-                     'L_Fastigial', 'R_Fastigial',
-                     'CE', 'L_CE', 'R_CE', 'PO_CE', 'AN_CE',
-                     'L_PO_CE', 'R_PO_CE', 'L_AN_CE', 'R_AN_CE',
-                     'V_CE'])
-plotAx_human_SUIT.set_xticklabels(plotAx_human_SUIT.get_xticklabels(), rotation=60)
-plt.show()
-mng.full_screen_toggle()
-plt.savefig('mri_CE_boxplot_human.png')
-human_volume_table_selection.to_csv('mri_CE_boxplot_human.csv')
-
-
-
-# Human subcortical volume overview plot
-fig6 = plt.figure()
-customPalette = [
-    (0.12156862745098039, 0.4666666666666667, 0.7058823529411765),
-    (1.0, 0.4980392156862745, 0.054901960784313725)
-]
-customPalette2 = [
-    (0.25, 0.25, 0.25),
-    (1.0, 0.4980392156862745, 0.054901960784313725)
-]
-human_volume_table_selection = human_volume_table[np.isin(human_volume_table['atlas'], ['subcortical'])]
-human_volume_table_selection['genotype'] = 'control'
-human_volume_table_selection.loc[human_volume_table_selection['subject'] == 'patient', 'genotype'] = 'patient'
-plotAx_human_subcortical = sns.boxplot(x="name",
-                                y="VolumeNormalized",
-                                hue="genotype",
-                                data=human_volume_table_selection,
-                                hue_order=['control', 'patient'],
-                                palette=customPalette)
-plotAx_human_subcortical = sns.swarmplot(x="name",
-                                  y="VolumeNormalized",
-                                  hue="genotype",
-                                  data=human_volume_table_selection,
-                                  palette=customPalette2,
-                                  dodge=0.4)
-plotAx_human_subcortical.set(xlabel='structure name', ylabel='Normalized volume')
-handles, labels = plotAx_human_subcortical.get_legend_handles_labels()
-l = plt.legend(handles[0:2], ['controls', 'patient'])
-# ax5.set_xticklabels(['SNr', 'SNc', 'MRN', 'Left_I_IV', 'Right_I_IV', 'Left_V', 'Right_V', 'Vermis_VII'])
-mng = plt.get_current_fig_manager()
-# mng.window.state('zoomed') #works fine on Windows!
-# mng.frame.Maximize(True)
-# mng.window.showMaximized
-plotAx_human_subcortical.set_xticklabels(['PU', 'CU', 'NA', 'EA',
-                     'GPext', 'GPint', 'SNc',
-                     'RN', 'SNr', 'PN',
-                     'VTA', 'VP', 'HN',
-                     'Hypothal', 'MN', 'SubthalN'])
-plotAx_human_subcortical.set_xticklabels(plotAx_human_subcortical.get_xticklabels(), rotation=60)
-plt.show()
-mng.full_screen_toggle()
-plt.savefig('mri_subcortical_boxplot_human.png')
-human_volume_table_selection.to_csv('mri_subcortical_boxplot_human.csv')
-
-
-
-# Human CerebrA-mask volume overview plot
-fig7 = plt.figure()
-customPalette = [
-    (0.12156862745098039, 0.4666666666666667, 0.7058823529411765),
-    (1.0, 0.4980392156862745, 0.054901960784313725)
-]
-customPalette2 = [
-    (0.25, 0.25, 0.25),
-    (1.0, 0.4980392156862745, 0.054901960784313725)
-]
-human_volume_table_selection = human_volume_table[np.isin(human_volume_table['atlas'], ['CerebrA', 'mask'])] ###
-human_volume_table_selection['genotype'] = 'control'
-human_volume_table_selection.loc[human_volume_table_selection['subject'] == 'patient', 'genotype'] = 'patient'
-plotAx_human_CerebrA = sns.boxplot(x="name",
-                                y="VolumeNormalized",
-                                hue="genotype",
-                                data=human_volume_table_selection,
-                                hue_order=['control', 'patient'],
-                                palette=customPalette) ###
-plotAx_human_CerebrA = sns.swarmplot(x="name",
-                                  y="VolumeNormalized",
-                                  hue="genotype",
-                                  data=human_volume_table_selection,
-                                  palette=customPalette2,
-                                  dodge=0.4) ###
-plotAx_human_CerebrA.set(xlabel='structure name', ylabel='Normalized volume') ###
-handles, labels = plotAx_human_CerebrA.get_legend_handles_labels() ###
-l = plt.legend(handles[0:2], ['controls', 'patient'])
-# ax5.set_xticklabels(['SNr', 'SNc', 'MRN', 'Left_I_IV', 'Right_I_IV', 'Left_V', 'Right_V', 'Vermis_VII'])
-mng = plt.get_current_fig_manager()
-# mng.window.state('zoomed') #works fine on Windows!
-# mng.frame.Maximize(True)
-# mng.window.showMaximized
-# plotAx_human_CerebrA.set_xticklabels(['PU', 'CU', 'NA', 'EA',
-#                      'GPext', 'GPint', 'SNc',
-#                      'RN', 'SNr', 'PN',
-#                      'VTA', 'VP', 'HN',
-#                      'Hypothal', 'MN', 'SubthalN']) ###
-plotAx_human_CerebrA.set_xticklabels(plotAx_human_CerebrA.get_xticklabels(), rotation=60) ###
-plt.show()
-mng.full_screen_toggle()
-plt.savefig('mri_CerebrA_boxplot_human.png') ###
-human_volume_table_selection.to_csv('mri_CerebrA_boxplot_human.csv') ###
-
-
-
-# Human AAN volume overview plot
-fig8 = plt.figure()
-customPalette = [
-    (0.12156862745098039, 0.4666666666666667, 0.7058823529411765),
-    (1.0, 0.4980392156862745, 0.054901960784313725)
-]
-customPalette2 = [
-    (0.25, 0.25, 0.25),
-    (1.0, 0.4980392156862745, 0.054901960784313725)
-]
-human_volume_table_selection = human_volume_table[np.isin(human_volume_table['atlas'], ['AAN'])] ###
-human_volume_table_selection['genotype'] = 'control'
-human_volume_table_selection.loc[human_volume_table_selection['subject'] == 'patient', 'genotype'] = 'patient'
-plotAx_human_AAN = sns.boxplot(x="name",
-                                y="VolumeNormalized",
-                                hue="genotype",
-                                data=human_volume_table_selection,
-                                hue_order=['control', 'patient'],
-                                palette=customPalette) ###
-plotAx_human_AAN = sns.swarmplot(x="name",
-                                  y="VolumeNormalized",
-                                  hue="genotype",
-                                  data=human_volume_table_selection,
-                                  palette=customPalette2,
-                                  dodge=0.4) ###
-plotAx_human_AAN.set(xlabel='structure name', ylabel='Normalized volume') ###
-handles, labels = plotAx_human_AAN.get_legend_handles_labels() ###
-l = plt.legend(handles[0:2], ['controls', 'patient'])
-# ax5.set_xticklabels(['SNr', 'SNc', 'MRN', 'Left_I_IV', 'Right_I_IV', 'Left_V', 'Right_V', 'Vermis_VII'])
-mng = plt.get_current_fig_manager()
-# mng.window.state('zoomed') #works fine on Windows!
-# mng.frame.Maximize(True)
-# mng.window.showMaximized
-# plotAx_human_AAN.set_xticklabels(['DR', 'LC', 'MRN', 'MR',
-#                      'PAG', 'PB', 'PO', 'PPN', 'VTA']) ######
-plotAx_human_AAN.set_xticklabels(plotAx_human_AAN.get_xticklabels(), rotation=60) ###
-plt.show()
-mng.full_screen_toggle()
-plt.savefig('mri_AAN_boxplot_human.png') ###
-human_volume_table_selection.to_csv('mri_AAN_boxplot_human.csv') ###
-
-
-
-# Human expSel volume overview plot
-fig9 = plt.figure()
-expression_human_selection_name_list = expression_selection_name_list.copy()
-expression_human_selection_name_list.append('parabrachial pigmented nucleus')
-customPalette = [
-    (0.12156862745098039, 0.4666666666666667, 0.7058823529411765),
-    (1.0, 0.4980392156862745, 0.054901960784313725)
-]
-customPalette2 = [
-    (0.25, 0.25, 0.25),
-    (1.0, 0.4980392156862745, 0.054901960784313725)
-]
-human_volume_table_selection = human_volume_table[np.isin(human_volume_table['name'], expression_human_selection_name_list)] ###
-human_volume_table_selection['genotype'] = 'control'
-human_volume_table_selection.loc[human_volume_table_selection['subject'] == 'patient', 'genotype'] = 'patient'
-VTA_AAN_logical = np.logical_and(human_volume_table_selection['name'] == 'ventral tegmental area', human_volume_table_selection['atlas'] == 'AAN')
-human_volume_table_selection.loc[VTA_AAN_logical, 'name'] = 'ventral tegmental area AAN'
-plotAx_human_expSel = sns.boxplot(x="name",
-                                y="VolumeNormalized",
-                                hue="genotype",
-                                data=human_volume_table_selection,
-                                hue_order=['control', 'patient'],
-                                palette=customPalette) ###
-plotAx_human_expSel = sns.swarmplot(x="name",
-                                  y="VolumeNormalized",
-                                  hue="genotype",
-                                  data=human_volume_table_selection,
-                                  palette=customPalette2,
-                                  dodge=0.4) ###
-plotAx_human_expSel.set(xlabel='structure name', ylabel='Normalized volume') ###
-handles, labels = plotAx_human_expSel.get_legend_handles_labels() ###
-l = plt.legend(handles[0:2], ['controls', 'patient'])
-# ax5.set_xticklabels(['SNr', 'SNc', 'MRN', 'Left_I_IV', 'Right_I_IV', 'Left_V', 'Right_V', 'Vermis_VII'])
-mng = plt.get_current_fig_manager()
-# mng.window.state('zoomed') #works fine on Windows!
-# mng.frame.Maximize(True)
-# mng.window.showMaximized
-plotAx_human_expSel.set_xticklabels(['SNc', 'SNr', 'PB', 'VTA',
-                     'MRN_AAN', 'PAG_AAN', 'PB_AAN', 'PPN_AAN', 'VTA_AAN']) ######
-plotAx_human_expSel.set_xticklabels(plotAx_human_expSel.get_xticklabels(), rotation=60) ###
-plt.show()
-mng.full_screen_toggle()
-plt.savefig('mri_expSel_boxplot_human.png') ###
-human_volume_table_selection.to_csv('mri_expSel_boxplot_human.csv') ###
-
-
-
-# Figure 10 mouse new significant
-mouse_volume_table_selection = mouse_volume_table[np.isin(mouse_volume_table['acronym'], significant_mouse_volume_selection)]
-mouse_volume_table_selection.to_csv(os.path.join('significant_mouse_volume_table.csv'))
-fig10 = plt.figure()
-
-# Calculate effect size for names where there is at least one sample for KO and WT
-# S_p = np.sqrt(((nWT - 1) * np.power(std_WT, 2) + (nKO - 1) * np.power(std_KO, 2)) / (N - 2))
-# S_p_AN = np.sqrt(((nWT - 1) * np.power(std_WT_AN, 2) + (nKO - 1) * np.power(std_KO_AN, 2)) / (N - 2))
-# S_p_RN = np.sqrt(((nWT - 1) * np.power(std_WT_RN, 2) + (nKO - 1) * np.power(std_KO_RN, 2)) / (N - 2))
-# cohenD = (mean_WT - mean_KO) / S_p
-
-customPalette = [
-    (0.12156862745098039, 0.4666666666666667, 0.7058823529411765),
-    (1.0, 0.4980392156862745, 0.054901960784313725)
-]
-# sns.set_theme(style="whitegrid")
-ax10 = sns.boxplot(x="acronym",
-                  y="VolumeNormalized",
-                  hue="genotype",
-                  data=mouse_volume_table_selection,
-                  hue_order=['Pax5++', 'Pax5-pR31Q-'],
-                  order=significant_mouse_volume_selection,
-                  palette=customPalette)
-sns.swarmplot(x="acronym",
-              y="VolumeNormalized",
-              hue="genotype",
-              data=mouse_volume_table_selection,
-              hue_order=['Pax5++', 'Pax5-pR31Q-'],
-              order=significant_mouse_volume_selection,
-              dodge=0.4,
-              color='.25')
-ax10.set_xticklabels(ax10.get_xticklabels(), rotation=60)
-ax10.set(xlabel='structure acronym', ylabel='Normalized volume')
-ax10.yaxis.grid(False) # Hide the horizontal gridlines
-ax10.xaxis.grid(True) # Show the vertical gridlines
-plt.show()
-handles, labels = ax10.get_legend_handles_labels()
-l = plt.legend(handles[0:2], labels[0:2])
-plt.savefig('mri_sigNew_boxplot_mouse.png')
-
-
-customHueOrder = ['2A#7', '2B#8', '2B#10',
-             '2A#2', '2A#5', '2B#6',
-             '2A#9', '2B#1', '2B#3']
-# Figure 11 mouse new significant
-customPalette = [
-    (0.12156862745098039, 0.4666666666666667, 0.7058823529411765),
-    (0.12156862745098039, 0.4666666666666667, 0.7058823529411765),
-    (0.12156862745098039, 0.4666666666666667, 0.7058823529411765),
-    (0.17254901960784313, 0.6274509803921569, 0.17254901960784313),
-    (0.17254901960784313, 0.6274509803921569, 0.17254901960784313),
-    (0.17254901960784313, 0.6274509803921569, 0.17254901960784313),
-    (1.0, 0.4980392156862745, 0.054901960784313725),
-    (1.0, 0.4980392156862745, 0.054901960784313725),
-    (1.0, 0.4980392156862745, 0.054901960784313725)
-]
-fig11 = plt.figure()
-sns.set_theme(style="whitegrid")
-g = sns.catplot(
-    data=n_slice_table_all, kind="bar",
-    x="acronym", y="n_slice", hue="subject",
-    alpha=.6, height=6,
-    order=expression_selection_sharptrack_acronym_list,
-    hue_order=customHueOrder,
-    palette=customPalette
-)
-g.despine(left=True)
-g.set_axis_labels("", "n_slice")
-g.legend.set_title("")
-plt.savefig('n_slice_coloredByGenotype.png')
-
-# Figure 12 mouse new significant
-fig12 = plt.figure()
-sns.set_theme(style="whitegrid")
-g = sns.catplot(
-    data=n_slice_table_all, kind="bar",
-    x="subject", y="n_slice", hue="acronym",
-    palette="dark", alpha=.6, height=6,
-    hue_order = expression_selection_sharptrack_acronym_list
-)
-g.despine(left=True)
-g.set_axis_labels("", "n_slice")
-g.legend.set_title("")
-plt.savefig('n_slice_groupedByMouse.png')
-
-# Figure 13 mouse new significant
-fig13 = plt.figure()
-sns.set_theme(style="whitegrid")
-g = sns.catplot(
-    data=n_slice_table_all, kind="bar",
-    x="acronym", y="n_slice", hue="subject",
-    palette="dark", alpha=.6, height=6,
-    order=expression_selection_sharptrack_acronym_list,
-    hue_order=customHueOrder
-)
-g.despine(left=True)
-g.set_axis_labels("", "n_slice")
-g.legend.set_title("")
-plt.savefig('n_slice.png')
-
-# Figure 14 mouse new significant
-n_slice_table_all_merged = pd.merge(left=n_slice_table_all, right=expression_table_all,
-         left_on=['subject', 'name'], right_on=['subject', 'name'])
-fig14 = plt.figure()
-sns.set_theme(style="whitegrid")
-g = sns.catplot(
-    data=n_slice_table_all_merged, kind="bar",
-    x="acronym_x", y="roi_count_permum3", hue="subject",
-    palette="dark", alpha=.6, height=6,
-    order=expression_selection_sharptrack_acronym_list,
-    hue_order=customHueOrder
-)
-g.despine(left=True)
-g.set_axis_labels("", "roi_count_permum3")
-g.legend.set_title("")
-plt.savefig('roi_count_permum3.png')
-
-# Figure 15: per section boxplots
-fig15 = plt.figure()
-customPalette = [
-    (0.12156862745098039, 0.4666666666666667, 0.7058823529411765),
-    (0.17254901960784313, 0.6274509803921569, 0.17254901960784313),
-    (1.0, 0.4980392156862745, 0.054901960784313725)
-]
-ax15 = sns.boxplot(x="acronym",
-                  y="roi_count_permum3",
-                  hue="genotype",
-                  data=expressionSection_table_selection,
-                  hue_order=['Pax5++', 'Pax5+-', 'Pax5-pR31Q-'],
-                  order=expression_selection_acronym_list,
-                  palette=customPalette)
-# sns.swarmplot(x="acronym",
-#               y="roi_count_permum3",
-#               hue="genotype",
-#               data=expressionSection_table_selection,
-#               hue_order=['Pax5++', 'Pax5+-', 'Pax5-pR31Q-'],
-#               order=expression_selection_acronym_list,
-#               color='.25',
-#               dodge=0.4)
-ax15.set_xticklabels(ax15.get_xticklabels(), rotation=60)
-ax15.set(xlabel='structure acronym', ylabel='cell count per mum^3')
-handles, labels = ax15.get_legend_handles_labels()
-l = plt.legend(handles[0:3], labels[0:3])
-ax15.yaxis.grid(False) # Hide the horizontal gridlines
-ax15.xaxis.grid(True) # Show the vertical gridlines
-plt.show()
-plt.savefig('histo_selectionSection_boxplot_mouse.png')
-expressionSection_table_selection.to_csv('histo_selectionSection_boxplot_mouse.csv')
-
-# Figure 16: per mouse boxplots?
-fig16 = plt.figure()
-customPalette = [
-    (0.12156862745098039, 0.4666666666666667, 0.7058823529411765),
-    (0.17254901960784313, 0.6274509803921569, 0.17254901960784313),
-    (1.0, 0.4980392156862745, 0.054901960784313725)
-]
-ax16 = sns.boxplot(x="acronym",
-                  y="roi_count_permum3",
-                  hue="genotype",
-                  data=expressionMouseSelection_table_all,
-                  hue_order=['Pax5++', 'Pax5+-', 'Pax5-pR31Q-'],
-                  order=expression_selection_acronym_list,
-                  palette=customPalette)
-# sns.swarmplot(x="acronym",
-#               y="roi_count_permum3",
-#               hue="genotype",
-#               data=expressionMouseSelection_table_all,
-#               hue_order=['Pax5++', 'Pax5+-', 'Pax5-pR31Q-'],
-#               order=expression_selection_acronym_list,
-#               color='.25',
-#               dodge=0.4)
-ax16.set_xticklabels(ax16.get_xticklabels(), rotation=60)
-ax16.set(xlabel='structure acronym', ylabel='cell count per mum^3')
-handles, labels = ax16.get_legend_handles_labels()
-l = plt.legend(handles[0:3], labels[0:3])
-ax16.yaxis.grid(False) # Hide the horizontal gridlines
-ax16.xaxis.grid(True) # Show the vertical gridlines
-plt.show()
-plt.savefig('histo_MouseSelection_boxplot_mouse.png')
-expressionMouseSelection_table_all.to_csv('histo_MouseSelection_boxplot_mouse.csv')
-
-# ################
-# #                   data=human_volume_table_selection,
-#                   hue_order=['control', 'patient'],
-#                   palette=customPalette2,
-#                     dodge=0.4)
-# ax5.set_xticklabels(ax5.get_xticklabels(), rotation=60)
-# ax5.set(xlabel='structure name', ylabel='Normalized volume')
-# handles, labels = ax5.get_legend_handles_labels()
+#
+#
+#
+#
+# # Human SUIT volume overview plot
+# fig5 = plt.figure()
+# customPalette = [
+#     (0.12156862745098039, 0.4666666666666667, 0.7058823529411765),
+#     (1.0, 0.4980392156862745, 0.054901960784313725)
+# ]
+# customPalette2 = [
+#     (0.25, 0.25, 0.25),
+#     (1.0, 0.4980392156862745, 0.054901960784313725)
+# ]
+# human_volume_table_selection = human_volume_table[np.isin(human_volume_table['atlas'], ['Lobules-SUIT'])]
+# human_volume_table_selection['genotype'] = 'control'
+# human_volume_table_selection.loc[human_volume_table_selection['subject'] == 'patient', 'genotype'] = 'patient'
+# plotAx_human_SUIT = sns.boxplot(x="name",
+#                                 y="VolumeNormalized",
+#                                 hue="genotype",
+#                                 data=human_volume_table_selection,
+#                                 hue_order=['control', 'patient'],
+#                                 palette=customPalette)
+# plotAx_human_SUIT = sns.swarmplot(x="name",
+#                                   y="VolumeNormalized",
+#                                   hue="genotype",
+#                                   data=human_volume_table_selection,
+#                                   hue_order=['control', 'patient'],
+#                                   palette=customPalette2,
+#                                   dodge=0.4)
+# # ax5.set_xticklabels(ax5.get_xticklabels(), rotation=60)
+# plotAx_human_SUIT.set(xlabel='structure name', ylabel='Normalized volume')
+# handles, labels = plotAx_human_SUIT.get_legend_handles_labels()
 # l = plt.legend(handles[0:2], ['controls', 'patient'])
-# # ax5.set_xticklabels(['SNr', 'SNc', 'MRN', 'Left_I_IV', 'Right_I_IV', 'Left_V', 'Right_V', 'Vermis_VII'])
-# ax5.set_xticklabels(['L_I-IV', 'R_I-IV', 'L_V', 'R_V',
+# # ax4.set_xticklabels(['SNr', 'SNc', 'MRN', 'Left_I_IV', 'Right_I_IV', 'Left_V', 'Right_V', 'Vermis_VII'])
+# mng = plt.get_current_fig_manager()
+# # mng.window.state('zoomed') #works fine on Windows!
+# # mng.frame.Maximize(True)
+# # mng.window.showMaximized
+# plotAx_human_SUIT.set_xticklabels(['L_I-IV', 'R_I-IV', 'L_V', 'R_V',
 #                      'L_VI', 'V_VI', 'R_VI',
 #                      'L_CrusI', 'V_CrusI', 'R_CrusI',
 #                      'L_CrusII', 'V_CrusII', 'R_CrusII',
@@ -818,34 +425,430 @@ expressionMouseSelection_table_all.to_csv('histo_MouseSelection_boxplot_mouse.cs
 #                      'CE', 'L_CE', 'R_CE', 'PO_CE', 'AN_CE',
 #                      'L_PO_CE', 'R_PO_CE', 'L_AN_CE', 'R_AN_CE',
 #                      'V_CE'])
+# plotAx_human_SUIT.set_xticklabels(plotAx_human_SUIT.get_xticklabels(), rotation=60)
+# plt.show()
+# mng.full_screen_toggle()
+# plt.savefig('mri_CE_boxplot_human.png')
+# human_volume_table_selection.to_csv('mri_CE_boxplot_human.csv')
+#
+#
+#
+# # Human subcortical volume overview plot
+# fig6 = plt.figure()
+# customPalette = [
+#     (0.12156862745098039, 0.4666666666666667, 0.7058823529411765),
+#     (1.0, 0.4980392156862745, 0.054901960784313725)
+# ]
+# customPalette2 = [
+#     (0.25, 0.25, 0.25),
+#     (1.0, 0.4980392156862745, 0.054901960784313725)
+# ]
+# human_volume_table_selection = human_volume_table[np.isin(human_volume_table['atlas'], ['subcortical'])]
+# human_volume_table_selection['genotype'] = 'control'
+# human_volume_table_selection.loc[human_volume_table_selection['subject'] == 'patient', 'genotype'] = 'patient'
+# plotAx_human_subcortical = sns.boxplot(x="name",
+#                                 y="VolumeNormalized",
+#                                 hue="genotype",
+#                                 data=human_volume_table_selection,
+#                                 hue_order=['control', 'patient'],
+#                                 palette=customPalette)
+# plotAx_human_subcortical = sns.swarmplot(x="name",
+#                                   y="VolumeNormalized",
+#                                   hue="genotype",
+#                                   data=human_volume_table_selection,
+#                                   palette=customPalette2,
+#                                   dodge=0.4)
+# plotAx_human_subcortical.set(xlabel='structure name', ylabel='Normalized volume')
+# handles, labels = plotAx_human_subcortical.get_legend_handles_labels()
+# l = plt.legend(handles[0:2], ['controls', 'patient'])
+# # ax5.set_xticklabels(['SNr', 'SNc', 'MRN', 'Left_I_IV', 'Right_I_IV', 'Left_V', 'Right_V', 'Vermis_VII'])
 # mng = plt.get_current_fig_manager()
 # # mng.window.state('zoomed') #works fine on Windows!
 # # mng.frame.Maximize(True)
 # # mng.window.showMaximized
+# plotAx_human_subcortical.set_xticklabels(['PU', 'CU', 'NA', 'EA',
+#                      'GPext', 'GPint', 'SNc',
+#                      'RN', 'SNr', 'PN',
+#                      'VTA', 'VP', 'HN',
+#                      'Hypothal', 'MN', 'SubthalN'])
+# plotAx_human_subcortical.set_xticklabels(plotAx_human_subcortical.get_xticklabels(), rotation=60)
 # plt.show()
 # mng.full_screen_toggle()
 # plt.savefig('mri_subcortical_boxplot_human.png')
 # human_volume_table_selection.to_csv('mri_subcortical_boxplot_human.csv')
-# ################
-
-
-
-
-# # pername expression processing to through pername
-# pername_pergen_table = pername_table_all.groupby(['genotype', 'name'])['roi_count_permm'].mean()
-# pername_pergen_table = pername_pergen_table.reset_index().rename(columns={'roi_count_permm': 'roi_count_permm_mean'})
-# # pername merging with mri data
-# mouse_volume_pergen_table = mouse_volume_pername_table.groupby(['genotype', 'name'])['VolumeNormalized'].mean()
-# mouse_volume_pergen_table = mouse_volume_pergen_table.reset_index().rename(columns={'VolumeNormalized': 'VolumeNormalized_mean'})
-# mouse_volume_pergen_table = mouse_volume_pergen_table[np.logical_not(np.isnan(mouse_volume_pergen_table['VolumeNormalized_mean']))]
-# pergen_merged_table = pd.merge(left=pername_pergen_table,
-#                                right=mouse_volume_pergen_table,
-#                                left_on=['genotype', 'name'],
-#                                right_on=['genotype', 'name'])
 #
-# # scatter plot average for different genotypes
-# mouse_volume_table[mouse_volume_table['name'] == 'Accessory abducens nucleus']
-
+#
+#
+# # Human CerebrA-mask volume overview plot
+# fig7 = plt.figure()
+# customPalette = [
+#     (0.12156862745098039, 0.4666666666666667, 0.7058823529411765),
+#     (1.0, 0.4980392156862745, 0.054901960784313725)
+# ]
+# customPalette2 = [
+#     (0.25, 0.25, 0.25),
+#     (1.0, 0.4980392156862745, 0.054901960784313725)
+# ]
+# human_volume_table_selection = human_volume_table[np.isin(human_volume_table['atlas'], ['CerebrA', 'mask'])] ###
+# human_volume_table_selection['genotype'] = 'control'
+# human_volume_table_selection.loc[human_volume_table_selection['subject'] == 'patient', 'genotype'] = 'patient'
+# plotAx_human_CerebrA = sns.boxplot(x="name",
+#                                 y="VolumeNormalized",
+#                                 hue="genotype",
+#                                 data=human_volume_table_selection,
+#                                 hue_order=['control', 'patient'],
+#                                 palette=customPalette) ###
+# plotAx_human_CerebrA = sns.swarmplot(x="name",
+#                                   y="VolumeNormalized",
+#                                   hue="genotype",
+#                                   data=human_volume_table_selection,
+#                                   palette=customPalette2,
+#                                   dodge=0.4) ###
+# plotAx_human_CerebrA.set(xlabel='structure name', ylabel='Normalized volume') ###
+# handles, labels = plotAx_human_CerebrA.get_legend_handles_labels() ###
+# l = plt.legend(handles[0:2], ['controls', 'patient'])
+# # ax5.set_xticklabels(['SNr', 'SNc', 'MRN', 'Left_I_IV', 'Right_I_IV', 'Left_V', 'Right_V', 'Vermis_VII'])
+# mng = plt.get_current_fig_manager()
+# # mng.window.state('zoomed') #works fine on Windows!
+# # mng.frame.Maximize(True)
+# # mng.window.showMaximized
+# # plotAx_human_CerebrA.set_xticklabels(['PU', 'CU', 'NA', 'EA',
+# #                      'GPext', 'GPint', 'SNc',
+# #                      'RN', 'SNr', 'PN',
+# #                      'VTA', 'VP', 'HN',
+# #                      'Hypothal', 'MN', 'SubthalN']) ###
+# plotAx_human_CerebrA.set_xticklabels(plotAx_human_CerebrA.get_xticklabels(), rotation=60) ###
+# plt.show()
+# mng.full_screen_toggle()
+# plt.savefig('mri_CerebrA_boxplot_human.png') ###
+# human_volume_table_selection.to_csv('mri_CerebrA_boxplot_human.csv') ###
+#
+#
+#
+# # Human AAN volume overview plot
+# fig8 = plt.figure()
+# customPalette = [
+#     (0.12156862745098039, 0.4666666666666667, 0.7058823529411765),
+#     (1.0, 0.4980392156862745, 0.054901960784313725)
+# ]
+# customPalette2 = [
+#     (0.25, 0.25, 0.25),
+#     (1.0, 0.4980392156862745, 0.054901960784313725)
+# ]
+# human_volume_table_selection = human_volume_table[np.isin(human_volume_table['atlas'], ['AAN'])] ###
+# human_volume_table_selection['genotype'] = 'control'
+# human_volume_table_selection.loc[human_volume_table_selection['subject'] == 'patient', 'genotype'] = 'patient'
+# plotAx_human_AAN = sns.boxplot(x="name",
+#                                 y="VolumeNormalized",
+#                                 hue="genotype",
+#                                 data=human_volume_table_selection,
+#                                 hue_order=['control', 'patient'],
+#                                 palette=customPalette) ###
+# plotAx_human_AAN = sns.swarmplot(x="name",
+#                                   y="VolumeNormalized",
+#                                   hue="genotype",
+#                                   data=human_volume_table_selection,
+#                                   palette=customPalette2,
+#                                   dodge=0.4) ###
+# plotAx_human_AAN.set(xlabel='structure name', ylabel='Normalized volume') ###
+# handles, labels = plotAx_human_AAN.get_legend_handles_labels() ###
+# l = plt.legend(handles[0:2], ['controls', 'patient'])
+# # ax5.set_xticklabels(['SNr', 'SNc', 'MRN', 'Left_I_IV', 'Right_I_IV', 'Left_V', 'Right_V', 'Vermis_VII'])
+# mng = plt.get_current_fig_manager()
+# # mng.window.state('zoomed') #works fine on Windows!
+# # mng.frame.Maximize(True)
+# # mng.window.showMaximized
+# # plotAx_human_AAN.set_xticklabels(['DR', 'LC', 'MRN', 'MR',
+# #                      'PAG', 'PB', 'PO', 'PPN', 'VTA']) ######
+# plotAx_human_AAN.set_xticklabels(plotAx_human_AAN.get_xticklabels(), rotation=60) ###
+# plt.show()
+# mng.full_screen_toggle()
+# plt.savefig('mri_AAN_boxplot_human.png') ###
+# human_volume_table_selection.to_csv('mri_AAN_boxplot_human.csv') ###
+#
+#
+#
+# # Human expSel volume overview plot
+# fig9 = plt.figure()
+# expression_human_selection_name_list = expression_selection_name_list.copy()
+# expression_human_selection_name_list.append('parabrachial pigmented nucleus')
+# customPalette = [
+#     (0.12156862745098039, 0.4666666666666667, 0.7058823529411765),
+#     (1.0, 0.4980392156862745, 0.054901960784313725)
+# ]
+# customPalette2 = [
+#     (0.25, 0.25, 0.25),
+#     (1.0, 0.4980392156862745, 0.054901960784313725)
+# ]
+# human_volume_table_selection = human_volume_table[np.isin(human_volume_table['name'], expression_human_selection_name_list)] ###
+# human_volume_table_selection['genotype'] = 'control'
+# human_volume_table_selection.loc[human_volume_table_selection['subject'] == 'patient', 'genotype'] = 'patient'
+# VTA_AAN_logical = np.logical_and(human_volume_table_selection['name'] == 'ventral tegmental area', human_volume_table_selection['atlas'] == 'AAN')
+# human_volume_table_selection.loc[VTA_AAN_logical, 'name'] = 'ventral tegmental area AAN'
+# plotAx_human_expSel = sns.boxplot(x="name",
+#                                 y="VolumeNormalized",
+#                                 hue="genotype",
+#                                 data=human_volume_table_selection,
+#                                 hue_order=['control', 'patient'],
+#                                 palette=customPalette) ###
+# plotAx_human_expSel = sns.swarmplot(x="name",
+#                                   y="VolumeNormalized",
+#                                   hue="genotype",
+#                                   data=human_volume_table_selection,
+#                                   palette=customPalette2,
+#                                   dodge=0.4) ###
+# plotAx_human_expSel.set(xlabel='structure name', ylabel='Normalized volume') ###
+# handles, labels = plotAx_human_expSel.get_legend_handles_labels() ###
+# l = plt.legend(handles[0:2], ['controls', 'patient'])
+# # ax5.set_xticklabels(['SNr', 'SNc', 'MRN', 'Left_I_IV', 'Right_I_IV', 'Left_V', 'Right_V', 'Vermis_VII'])
+# mng = plt.get_current_fig_manager()
+# # mng.window.state('zoomed') #works fine on Windows!
+# # mng.frame.Maximize(True)
+# # mng.window.showMaximized
+# plotAx_human_expSel.set_xticklabels(['SNc', 'SNr', 'PB', 'VTA',
+#                      'MRN_AAN', 'PAG_AAN', 'PB_AAN', 'PPN_AAN', 'VTA_AAN']) ######
+# plotAx_human_expSel.set_xticklabels(plotAx_human_expSel.get_xticklabels(), rotation=60) ###
+# plt.show()
+# mng.full_screen_toggle()
+# plt.savefig('mri_expSel_boxplot_human.png') ###
+# human_volume_table_selection.to_csv('mri_expSel_boxplot_human.csv') ###
+#
+#
+#
+# # Figure 10 mouse new significant
+# mouse_volume_table_selection = mouse_volume_table[np.isin(mouse_volume_table['acronym'], significant_mouse_volume_selection)]
+# mouse_volume_table_selection.to_csv(os.path.join('significant_mouse_volume_table.csv'))
+# fig10 = plt.figure()
+#
+# # Calculate effect size for names where there is at least one sample for KO and WT
+# # S_p = np.sqrt(((nWT - 1) * np.power(std_WT, 2) + (nKO - 1) * np.power(std_KO, 2)) / (N - 2))
+# # S_p_AN = np.sqrt(((nWT - 1) * np.power(std_WT_AN, 2) + (nKO - 1) * np.power(std_KO_AN, 2)) / (N - 2))
+# # S_p_RN = np.sqrt(((nWT - 1) * np.power(std_WT_RN, 2) + (nKO - 1) * np.power(std_KO_RN, 2)) / (N - 2))
+# # cohenD = (mean_WT - mean_KO) / S_p
+#
+# customPalette = [
+#     (0.12156862745098039, 0.4666666666666667, 0.7058823529411765),
+#     (1.0, 0.4980392156862745, 0.054901960784313725)
+# ]
+# # sns.set_theme(style="whitegrid")
+# ax10 = sns.boxplot(x="acronym",
+#                   y="VolumeNormalized",
+#                   hue="genotype",
+#                   data=mouse_volume_table_selection,
+#                   hue_order=['Pax5++', 'Pax5-pR31Q-'],
+#                   order=significant_mouse_volume_selection,
+#                   palette=customPalette)
+# sns.swarmplot(x="acronym",
+#               y="VolumeNormalized",
+#               hue="genotype",
+#               data=mouse_volume_table_selection,
+#               hue_order=['Pax5++', 'Pax5-pR31Q-'],
+#               order=significant_mouse_volume_selection,
+#               dodge=0.4,
+#               color='.25')
+# ax10.set_xticklabels(ax10.get_xticklabels(), rotation=60)
+# ax10.set(xlabel='structure acronym', ylabel='Normalized volume')
+# ax10.yaxis.grid(False) # Hide the horizontal gridlines
+# ax10.xaxis.grid(True) # Show the vertical gridlines
+# plt.show()
+# handles, labels = ax10.get_legend_handles_labels()
+# l = plt.legend(handles[0:2], labels[0:2])
+# plt.savefig('mri_sigNew_boxplot_mouse.png')
+#
+#
+# customHueOrder = ['2A#7', '2B#8', '2B#10',
+#              '2A#2', '2A#5', '2B#6',
+#              '2A#9', '2B#1', '2B#3']
+# # Figure 11 mouse new significant
+# customPalette = [
+#     (0.12156862745098039, 0.4666666666666667, 0.7058823529411765),
+#     (0.12156862745098039, 0.4666666666666667, 0.7058823529411765),
+#     (0.12156862745098039, 0.4666666666666667, 0.7058823529411765),
+#     (0.17254901960784313, 0.6274509803921569, 0.17254901960784313),
+#     (0.17254901960784313, 0.6274509803921569, 0.17254901960784313),
+#     (0.17254901960784313, 0.6274509803921569, 0.17254901960784313),
+#     (1.0, 0.4980392156862745, 0.054901960784313725),
+#     (1.0, 0.4980392156862745, 0.054901960784313725),
+#     (1.0, 0.4980392156862745, 0.054901960784313725)
+# ]
+# fig11 = plt.figure()
+# sns.set_theme(style="whitegrid")
+# g = sns.catplot(
+#     data=n_slice_table_all, kind="bar",
+#     x="acronym", y="n_slice", hue="subject",
+#     alpha=.6, height=6,
+#     order=expression_selection_sharptrack_acronym_list,
+#     hue_order=customHueOrder,
+#     palette=customPalette
+# )
+# g.despine(left=True)
+# g.set_axis_labels("", "n_slice")
+# g.legend.set_title("")
+# plt.savefig('n_slice_coloredByGenotype.png')
+#
+# # Figure 12 mouse new significant
+# fig12 = plt.figure()
+# sns.set_theme(style="whitegrid")
+# g = sns.catplot(
+#     data=n_slice_table_all, kind="bar",
+#     x="subject", y="n_slice", hue="acronym",
+#     palette="dark", alpha=.6, height=6,
+#     hue_order = expression_selection_sharptrack_acronym_list
+# )
+# g.despine(left=True)
+# g.set_axis_labels("", "n_slice")
+# g.legend.set_title("")
+# plt.savefig('n_slice_groupedByMouse.png')
+#
+# # Figure 13 mouse new significant
+# fig13 = plt.figure()
+# sns.set_theme(style="whitegrid")
+# g = sns.catplot(
+#     data=n_slice_table_all, kind="bar",
+#     x="acronym", y="n_slice", hue="subject",
+#     palette="dark", alpha=.6, height=6,
+#     order=expression_selection_sharptrack_acronym_list,
+#     hue_order=customHueOrder
+# )
+# g.despine(left=True)
+# g.set_axis_labels("", "n_slice")
+# g.legend.set_title("")
+# plt.savefig('n_slice.png')
+#
+# # Figure 14 mouse new significant
+# n_slice_table_all_merged = pd.merge(left=n_slice_table_all, right=expression_table_all,
+#          left_on=['subject', 'name'], right_on=['subject', 'name'])
+# fig14 = plt.figure()
+# sns.set_theme(style="whitegrid")
+# g = sns.catplot(
+#     data=n_slice_table_all_merged, kind="bar",
+#     x="acronym_x", y="roi_count_permum3", hue="subject",
+#     palette="dark", alpha=.6, height=6,
+#     order=expression_selection_sharptrack_acronym_list,
+#     hue_order=customHueOrder
+# )
+# g.despine(left=True)
+# g.set_axis_labels("", "roi_count_permum3")
+# g.legend.set_title("")
+# plt.savefig('roi_count_permum3.png')
+#
+# # Figure 15: per section boxplots
+# fig15 = plt.figure()
+# customPalette = [
+#     (0.12156862745098039, 0.4666666666666667, 0.7058823529411765),
+#     (0.17254901960784313, 0.6274509803921569, 0.17254901960784313),
+#     (1.0, 0.4980392156862745, 0.054901960784313725)
+# ]
+# ax15 = sns.violinplot(x="acronym",
+#                   y="roi_count_permum3",
+#                   hue="genotype",
+#                   data=expressionSection_table_selection,
+#                   hue_order=['Pax5++', 'Pax5+-', 'Pax5-pR31Q-'],
+#                   order=expression_selection_acronym_list,
+#                   palette=customPalette)
+# # sns.swarmplot(x="acronym",
+# #               y="roi_count_permum3",
+# #               hue="genotype",
+# #               data=expressionSection_table_selection,
+# #               hue_order=['Pax5++', 'Pax5+-', 'Pax5-pR31Q-'],
+# #               order=expression_selection_acronym_list,
+# #               color='.25',
+# #               dodge=0.4)
+# ax15.set_xticklabels(ax15.get_xticklabels(), rotation=60)
+# ax15.set(xlabel='structure acronym', ylabel='cell count per mum^3')
+# handles, labels = ax15.get_legend_handles_labels()
+# l = plt.legend(handles[0:3], labels[0:3])
+# ax15.yaxis.grid(False) # Hide the horizontal gridlines
+# ax15.xaxis.grid(True) # Show the vertical gridlines
+# ax15.set_ylim((0, ax15.get_ylim()[1]))
+# plt.show()
+# plt.savefig('histo_selectionSection_boxplot_mouse.png')
+# expressionSection_table_selection.to_csv('histo_selectionSection_boxplot_mouse.csv')
+#
+# # Figure 16: per mouse boxplots?
+# fig16 = plt.figure()
+# customPalette = [
+#     (0.12156862745098039, 0.4666666666666667, 0.7058823529411765),
+#     (0.17254901960784313, 0.6274509803921569, 0.17254901960784313),
+#     (1.0, 0.4980392156862745, 0.054901960784313725)
+# ]
+# ax16 = sns.boxplot(x="acronym",
+#                   y="roi_count_permum3",
+#                   hue="genotype",
+#                   data=expressionMouseSelection_table_all,
+#                   hue_order=['Pax5++', 'Pax5+-', 'Pax5-pR31Q-'],
+#                   order=expression_selection_acronym_list,
+#                   palette=customPalette)
+# # sns.swarmplot(x="acronym",
+# #               y="roi_count_permum3",
+# #               hue="genotype",
+# #               data=expressionMouseSelection_table_all,
+# #               hue_order=['Pax5++', 'Pax5+-', 'Pax5-pR31Q-'],
+# #               order=expression_selection_acronym_list,
+# #               color='.25',
+# #               dodge=0.4)
+# ax16.set_xticklabels(ax16.get_xticklabels(), rotation=60)
+# ax16.set(xlabel='structure acronym', ylabel='cell count per mum^3')
+# handles, labels = ax16.get_legend_handles_labels()
+# l = plt.legend(handles[0:3], labels[0:3])
+# ax16.yaxis.grid(False) # Hide the horizontal gridlines
+# ax16.xaxis.grid(True) # Show the vertical gridlines
+# plt.show()
+# plt.savefig('histo_MouseSelection_boxplot_mouse.png')
+# expressionMouseSelection_table_all.to_csv('histo_MouseSelection_boxplot_mouse.csv')
+#
+# # ################
+# # #                   data=human_volume_table_selection,
+# #                   hue_order=['control', 'patient'],
+# #                   palette=customPalette2,
+# #                     dodge=0.4)
+# # ax5.set_xticklabels(ax5.get_xticklabels(), rotation=60)
+# # ax5.set(xlabel='structure name', ylabel='Normalized volume')
+# # handles, labels = ax5.get_legend_handles_labels()
+# # l = plt.legend(handles[0:2], ['controls', 'patient'])
+# # # ax5.set_xticklabels(['SNr', 'SNc', 'MRN', 'Left_I_IV', 'Right_I_IV', 'Left_V', 'Right_V', 'Vermis_VII'])
+# # ax5.set_xticklabels(['L_I-IV', 'R_I-IV', 'L_V', 'R_V',
+# #                      'L_VI', 'V_VI', 'R_VI',
+# #                      'L_CrusI', 'V_CrusI', 'R_CrusI',
+# #                      'L_CrusII', 'V_CrusII', 'R_CrusII',
+# #                      'L_VIIb', 'V_VIIb', 'R_VIIb',
+# #                      'L_VIIIa', 'V_VIIIa', 'R_VIIIa',
+# #                      'L_VIIIb', 'V_VIIIb', 'R_VIIIb',
+# #                      'L_IX', 'V_IX', 'R_IX',
+# #                      'L_X', 'V_X', 'R_X',
+# #                      'L_Dentate', 'R_Dentate', 'L_Interposed', 'R_Interposed',
+# #                      'L_Fastigial', 'R_Fastigial',
+# #                      'CE', 'L_CE', 'R_CE', 'PO_CE', 'AN_CE',
+# #                      'L_PO_CE', 'R_PO_CE', 'L_AN_CE', 'R_AN_CE',
+# #                      'V_CE'])
+# # mng = plt.get_current_fig_manager()
+# # # mng.window.state('zoomed') #works fine on Windows!
+# # # mng.frame.Maximize(True)
+# # # mng.window.showMaximized
+# # plt.show()
+# # mng.full_screen_toggle()
+# # plt.savefig('mri_subcortical_boxplot_human.png')
+# # human_volume_table_selection.to_csv('mri_subcortical_boxplot_human.csv')
+# # ################
+#
+#
+#
+#
+# # # pername expression processing to through pername
+# # pername_pergen_table = pername_table_all.groupby(['genotype', 'name'])['roi_count_permm'].mean()
+# # pername_pergen_table = pername_pergen_table.reset_index().rename(columns={'roi_count_permm': 'roi_count_permm_mean'})
+# # # pername merging with mri data
+# # mouse_volume_pergen_table = mouse_volume_pername_table.groupby(['genotype', 'name'])['VolumeNormalized'].mean()
+# # mouse_volume_pergen_table = mouse_volume_pergen_table.reset_index().rename(columns={'VolumeNormalized': 'VolumeNormalized_mean'})
+# # mouse_volume_pergen_table = mouse_volume_pergen_table[np.logical_not(np.isnan(mouse_volume_pergen_table['VolumeNormalized_mean']))]
+# # pergen_merged_table = pd.merge(left=pername_pergen_table,
+# #                                right=mouse_volume_pergen_table,
+# #                                left_on=['genotype', 'name'],
+# #                                right_on=['genotype', 'name'])
+# #
+# # # scatter plot average for different genotypes
+# # mouse_volume_table[mouse_volume_table['name'] == 'Accessory abducens nucleus']
+#
 name_uniq = np.unique(np.array(expression_table_all['name'].astype('category')))
 nName = len(name_uniq)
 pername_expression_table_list = list()
@@ -931,80 +934,809 @@ pername_expression_table.loc[pername_expression_table['acronym'] == 'root', 'acr
 pername_expression_table.loc[pername_expression_table['acronym'] == 'CUL4 5', 'acronym'] = 'CUL4, 5'
 pername_expression_table.loc[pername_expression_table['acronym'] == 'Mmd', 'acronym'] = 'MMd'
 pername_expression_table.to_csv('pername_expression_table.csv')
-
-pername_merged_table = pd.merge(left=pername_expression_table,
-         right=mouse_volume_pername_table,
-         left_on='acronym',
-         right_on='acronym',
-         how='inner') # outer for testing purposes
-pername_merged_table = pername_merged_table.drop(columns=['name_y', 'pValBon_x', 'pValBon_y', 'pValBon_BrainNormalized',
-                                                          'WT_mean_AllenNormalized', 'WT_std_AllenNormalized',
-                                                          'KO_mean_AllenNormalized', 'KO_std_AllenNormalized'])
-pername_merged_table = pername_merged_table.rename(columns={'cohenD_x': 'cohenD_histo',
-                                                            'cohenD_y': 'cohenD_mri',
-                                                            'cohenD_CI_x': 'cohenD_CI_histo',
-                                                            'cohenD_CI_y': 'cohenD_CI_mri',
-                                                            'WT_mean_x': 'WT_mean_histo',
-                                                            'WT_mean_y': 'WT_mean_mri',
-                                                            'WT_mean_count': 'WT_mean_count_histo',
-                                                            'WT_std_x': 'WT_std_histo',
-                                                            'WT_std_y': 'WT_std_mri',
-                                                            'het_mean': 'het_mean_histo',
-                                                            'het_mean_count': 'het_mean_count_histo',
-                                                            'het_std': 'het_std_histo',
-                                                            'KO_mean_x': 'KO_mean_histo',
-                                                            'KO_mean_y': 'KO_mean_mri',
-                                                            'KO_mean_count': 'KO_mean_count_histo',
-                                                            'KO_std_x': 'KO_std_histo',
-                                                            'KO_std_y': 'KO_std_mri',
-                                                            't_stat_x': 't_stat_histo',
-                                                            't_stat_y': 't_stat_mri',
-                                                            'pVal_x': 'pVal_histo',
-                                                            'pVal_y': 'pVal_mri',
-                                                            'pValFDR_x': 'pValFDR_histo',
-                                                            'pValFDR_y': 'pValFDR_mri',
-                                                            'pVal_BrainNormalized': 'pVal_norm_mri',
-                                                            'pValFDR_BrainNormalized': 'pValFDR_norm_mri',
-                                                            'WT_mean_BrainNormalized': 'WT_mean_norm_mri',
-                                                            'WT_std_BrainNormalized': 'WT_std_norm_mri',
-                                                            'KO_mean_BrainNormalized': 'KO_mean_norm_mri',
-                                                            'KO_std_BrainNormalized': 'KO_std_norm_mri',
-                                                            'cohenD_BrainNormalized': 'cohenD_norm_mri',
-                                                            'cohenD_BrainNormalized_CI': 'cohenD_CI_norm_mri',
-                                                            'name_x': 'name'})
-pername_merged_table.to_csv('pername_merged_table.csv')
-
-
-
 #
-fig10 = plt.figure()
-sns.regplot(data=pername_merged_table,
-                x='cohenD_histo', y='cohenD_mri')
+# pername_merged_table = pd.merge(left=pername_expression_table,
+#          right=mouse_volume_pername_table,
+#          left_on='acronym',
+#          right_on='acronym',
+#          how='inner') # outer for testing purposes
+# pername_merged_table = pername_merged_table.drop(columns=['name_y', 'pValBon_x', 'pValBon_y', 'pValBon_BrainNormalized',
+#                                                           'WT_mean_AllenNormalized', 'WT_std_AllenNormalized',
+#                                                           'KO_mean_AllenNormalized', 'KO_std_AllenNormalized'])
+# pername_merged_table = pername_merged_table.rename(columns={'cohenD_x': 'cohenD_histo',
+#                                                             'cohenD_y': 'cohenD_mri',
+#                                                             'cohenD_CI_x': 'cohenD_CI_histo',
+#                                                             'cohenD_CI_y': 'cohenD_CI_mri',
+#                                                             'WT_mean_x': 'WT_mean_histo',
+#                                                             'WT_mean_y': 'WT_mean_mri',
+#                                                             'WT_mean_count': 'WT_mean_count_histo',
+#                                                             'WT_std_x': 'WT_std_histo',
+#                                                             'WT_std_y': 'WT_std_mri',
+#                                                             'het_mean': 'het_mean_histo',
+#                                                             'het_mean_count': 'het_mean_count_histo',
+#                                                             'het_std': 'het_std_histo',
+#                                                             'KO_mean_x': 'KO_mean_histo',
+#                                                             'KO_mean_y': 'KO_mean_mri',
+#                                                             'KO_mean_count': 'KO_mean_count_histo',
+#                                                             'KO_std_x': 'KO_std_histo',
+#                                                             'KO_std_y': 'KO_std_mri',
+#                                                             't_stat_x': 't_stat_histo',
+#                                                             't_stat_y': 't_stat_mri',
+#                                                             'pVal_x': 'pVal_histo',
+#                                                             'pVal_y': 'pVal_mri',
+#                                                             'pValFDR_x': 'pValFDR_histo',
+#                                                             'pValFDR_y': 'pValFDR_mri',
+#                                                             'pVal_BrainNormalized': 'pVal_norm_mri',
+#                                                             'pValFDR_BrainNormalized': 'pValFDR_norm_mri',
+#                                                             'WT_mean_BrainNormalized': 'WT_mean_norm_mri',
+#                                                             'WT_std_BrainNormalized': 'WT_std_norm_mri',
+#                                                             'KO_mean_BrainNormalized': 'KO_mean_norm_mri',
+#                                                             'KO_std_BrainNormalized': 'KO_std_norm_mri',
+#                                                             'cohenD_BrainNormalized': 'cohenD_norm_mri',
+#                                                             'cohenD_BrainNormalized_CI': 'cohenD_CI_norm_mri',
+#                                                             'name_x': 'name'})
+# pername_merged_table.to_csv('pername_merged_table.csv')
+#
+#
+#
+# #
+# fig10 = plt.figure()
+# sns.regplot(data=pername_merged_table,
+#                 x='cohenD_histo', y='cohenD_mri')
+# plt.show()
+# sns.regplot(data=pername_merged_table,
+#                 x='cohenD_histo', y='cohenD_norm_mri')
+# plt.show()
+#
+# notnan = np.logical_and(np.logical_not(np.isnan(pername_merged_table['cohenD_histo'])),
+#                         np.logical_not(np.isnan(pername_merged_table['cohenD_mri'])))
+# notnan2 = np.logical_and(np.logical_not(np.isnan(pername_merged_table['cohenD_histo'])),
+#                         np.logical_not(np.isnan(pername_merged_table['cohenD_norm_mri'])))
+# slope, intercept, r_value, p_value, std_err = linregress(pername_merged_table.loc[notnan, 'cohenD_histo'],
+#                                                          pername_merged_table.loc[notnan, 'cohenD_mri'])
+# slope2, intercept2, r2_value, p2_value, std2_err = linregress(pername_merged_table.loc[notnan2, 'cohenD_histo'],
+#                                                          pername_merged_table.loc[notnan2, 'cohenD_norm_mri'])
+#
+#
+# # pername_expression_table = pername_expression_table.reindex(columns = ['name',
+# #                                                              'cohenD', 'cohenD_BrainNormalized',
+# #                                                              'cohenD_CI', 'cohenD_BrainNormalized_CI',
+# #                                                              't_stat', 'pVal', 'pVal_BrainNormalized',
+# #                                                              'pValBon', 'pValBon_BrainNormalized',
+# #                                                              'pValFDR', 'pValFDR_BrainNormalized',
+# #                                                              'WT_mean', 'WT_std',
+# #                                                              'KO_mean', 'KO_std',
+# #                                                              'WT_mean_AllenNormalized', 'WT_std_AllenNormalized',
+# #                                                              'KO_mean_AllenNormalized', 'KO_std_AllenNormalized',
+# #                                                              'WT_mean_BrainNormalized', 'WT_std_BrainNormalized',
+# #                                                              'KO_mean_BrainNormalized', 'KO_std_BrainNormalized'])
+# # mouse_table_pername.to_csv(pername_table_path_list[iIncludeInTest - 1])
+#
+# ##########################################################
+
+
+
+
+
+
+
+###### SUIT plots
+
+
+## Edit human table, minus mean of controls and then divide by control std for both VolumeNormalized and VolumeMaskNormalized - z-scoring
+human_volume_table_copy = human_volume_table.copy()
+#
+# human_volume_table_controlMean = human_volume_table[human_volume_table['subject'] != 'patient'].groupby('name')['VolumeNormalized'].mean().reset_index().rename(columns={'VolumeNormalized':'VolumeNormalizedControlMean'})
+# human_volume_table_controlSTD = human_volume_table[human_volume_table['subject'] != 'patient'].groupby('name')['VolumeNormalized'].std().reset_index().rename(columns={'VolumeNormalized':'VolumeNormalizedControlSTD'})
+# human_volume_table = pd.merge(left=human_volume_table, right=human_volume_table_controlMean,
+#          left_on='name', right_on='name')
+# human_volume_table = pd.merge(left=human_volume_table, right=human_volume_table_controlSTD,
+#          left_on='name', right_on='name')
+#
+# human_volume_table_controlMean = human_volume_table[human_volume_table['subject'] != 'patient'].groupby('name')['VolumeMaskNormalized'].mean().reset_index().rename(columns={'VolumeMaskNormalized':'VolumeMaskNormalizedControlMean'})
+# human_volume_table_controlSTD = human_volume_table[human_volume_table['subject'] != 'patient'].groupby('name')['VolumeMaskNormalized'].std().reset_index().rename(columns={'VolumeMaskNormalized':'VolumeMaskNormalizedControlSTD'})
+# human_volume_table = pd.merge(left=human_volume_table, right=human_volume_table_controlMean,
+#          left_on='name', right_on='name')
+# human_volume_table = pd.merge(left=human_volume_table, right=human_volume_table_controlSTD,
+#          left_on='name', right_on='name')
+#
+# human_volume_table['VolumeNormalized'] = (human_volume_table['VolumeNormalized'] - human_volume_table['VolumeNormalizedControlMean']) / human_volume_table['VolumeNormalizedControlSTD']
+# human_volume_table['VolumeMaskNormalized'] = (human_volume_table['VolumeMaskNormalized'] - human_volume_table['VolumeMaskNormalizedControlMean']) / human_volume_table['VolumeMaskNormalizedControlSTD']
+
+## volumeMaskNormalized - CE
+# Human SUIT volume overview plot
+figHumanSUIT = plt.figure()
+customPalette = [
+    (0.12156862745098039, 0.4666666666666667, 0.7058823529411765),
+    (1.0, 0.4980392156862745, 0.054901960784313725)
+]
+customPalette2 = [
+    (0.25, 0.25, 0.25),
+    (1.0, 0.4980392156862745, 0.054901960784313725)
+]
+human_volume_table_selection = human_volume_table[np.isin(human_volume_table['atlas'], ['Lobules-SUIT'])]
+human_volume_table_selection['genotype'] = 'control'
+human_volume_table_selection.loc[human_volume_table_selection['subject'] == 'patient', 'genotype'] = 'patient'
+axHumanSUIT = sns.boxplot(x="name",
+                                y="VolumeMaskNormalized",
+                                hue="genotype",
+                                data=human_volume_table_selection,
+                                hue_order=['control', 'patient'],
+                                palette=customPalette,
+                                medianprops=dict(color="red", alpha=0))
+axHumanSUIT = sns.swarmplot(x="name",
+                                  y="VolumeMaskNormalized",
+                                  hue="genotype",
+                                  data=human_volume_table_selection,
+                                  hue_order=['control', 'patient'],
+                                  palette=customPalette2,
+                                  dodge=0.4)
+# ax5.set_xticklabels(ax5.get_xticklabels(), rotation=60)
+axHumanSUIT.set(xlabel='structure name', ylabel='Normalized to mask volume')
+handles, labels = axHumanSUIT.get_legend_handles_labels()
+l = plt.legend(handles[0:2], ['controls', 'patient'])
+# ax4.set_xticklabels(['SNr', 'SNc', 'MRN', 'Left_I_IV', 'Right_I_IV', 'Left_V', 'Right_V', 'Vermis_VII'])
+mng = plt.get_current_fig_manager()
+# mng.window.state('zoomed') #works fine on Windows!
+# mng.frame.Maximize(True)
+# mng.window.showMaximized
+axHumanSUIT.set_xticklabels(['L_I-IV', 'R_I-IV', 'L_V', 'R_V',
+                     'L_VI', 'V_VI', 'R_VI',
+                     'L_CrusI', 'V_CrusI', 'R_CrusI',
+                     'L_CrusII', 'V_CrusII', 'R_CrusII',
+                     'L_VIIb', 'V_VIIb', 'R_VIIb',
+                     'L_VIIIa', 'V_VIIIa', 'R_VIIIa',
+                     'L_VIIIb', 'V_VIIIb', 'R_VIIIb',
+                     'L_IX', 'V_IX', 'R_IX',
+                     'L_X', 'V_X', 'R_X',
+                     'L_Dentate', 'R_Dentate', 'L_Interposed', 'R_Interposed',
+                     'L_Fastigial', 'R_Fastigial',
+                     'CE', 'L_CE', 'R_CE', 'PO_CE', 'AN_CE',
+                     'L_PO_CE', 'R_PO_CE', 'L_AN_CE', 'R_AN_CE',
+                     'V_CE'])
+axHumanSUIT.set_xticklabels(axHumanSUIT.get_xticklabels(), rotation=60)
 plt.show()
-sns.regplot(data=pername_merged_table,
-                x='cohenD_histo', y='cohenD_norm_mri')
+# mng.full_screen_toggle()
+plt.savefig('mri_CE_boxplot_human_maskNormalized.png')
+# human_volume_table_selection.to_csv('mri_CE_boxplot_human.csv')
+
+
+
+## volumeNormalized - CE
+# Human SUIT volume overview plot
+figHumanSUIT_ref = plt.figure()
+customPalette = [
+    (0.12156862745098039, 0.4666666666666667, 0.7058823529411765),
+    (1.0, 0.4980392156862745, 0.054901960784313725)
+]
+customPalette2 = [
+    (0.25, 0.25, 0.25),
+    (1.0, 0.4980392156862745, 0.054901960784313725)
+]
+human_volume_table_selection = human_volume_table[np.isin(human_volume_table['atlas'], ['Lobules-SUIT'])]
+# human_volume_table_selection = human_volume_table[human_volume_table['name'].str.contains('Vermis')]
+human_volume_table_selection['genotype'] = 'control'
+human_volume_table_selection.loc[human_volume_table_selection['subject'] == 'patient', 'genotype'] = 'patient'
+axHumanSUIT = sns.boxplot(x="name",
+                                y="VolumeNormalized",
+                                hue="genotype",
+                                data=human_volume_table_selection,
+                                hue_order=['control', 'patient'],
+                                palette=customPalette,
+                                medianprops=dict(color="red", alpha=0))
+axHumanSUIT = sns.swarmplot(x="name",
+                                  y="VolumeNormalized",
+                                  hue="genotype",
+                                  data=human_volume_table_selection,
+                                  hue_order=['control', 'patient'],
+                                  palette=customPalette2,
+                                  dodge=0.4)
+# ax5.set_xticklabels(ax5.get_xticklabels(), rotation=60)
+axHumanSUIT.set(xlabel='structure name', ylabel='Normalized to reference structure volume')
+handles, labels = axHumanSUIT.get_legend_handles_labels()
+l = plt.legend(handles[0:2], ['controls', 'patient'])
+# ax4.set_xticklabels(['SNr', 'SNc', 'MRN', 'Left_I_IV', 'Right_I_IV', 'Left_V', 'Right_V', 'Vermis_VII'])
+mng = plt.get_current_fig_manager()
+# mng.window.state('zoomed') #works fine on Windows!
+# mng.frame.Maximize(True)
+# mng.window.showMaximized
+axHumanSUIT.set_xticklabels(['L_I-IV', 'R_I-IV', 'L_V', 'R_V',
+                     'L_VI', 'V_VI', 'R_VI',
+                     'L_CrusI', 'V_CrusI', 'R_CrusI',
+                     'L_CrusII', 'V_CrusII', 'R_CrusII',
+                     'L_VIIb', 'V_VIIb', 'R_VIIb',
+                     'L_VIIIa', 'V_VIIIa', 'R_VIIIa',
+                     'L_VIIIb', 'V_VIIIb', 'R_VIIIb',
+                     'L_IX', 'V_IX', 'R_IX',
+                     'L_X', 'V_X', 'R_X',
+                     'L_Dentate', 'R_Dentate', 'L_Interposed', 'R_Interposed',
+                     'L_Fastigial', 'R_Fastigial',
+                     'CE', 'L_CE', 'R_CE', 'PO_CE', 'AN_CE',
+                     'L_PO_CE', 'R_PO_CE', 'L_AN_CE', 'R_AN_CE',
+                     'V_CE'])
+axHumanSUIT.set_xticklabels(axHumanSUIT.get_xticklabels(), rotation=60)
 plt.show()
-
-notnan = np.logical_and(np.logical_not(np.isnan(pername_merged_table['cohenD_histo'])),
-                        np.logical_not(np.isnan(pername_merged_table['cohenD_mri'])))
-notnan2 = np.logical_and(np.logical_not(np.isnan(pername_merged_table['cohenD_histo'])),
-                        np.logical_not(np.isnan(pername_merged_table['cohenD_norm_mri'])))
-slope, intercept, r_value, p_value, std_err = linregress(pername_merged_table.loc[notnan, 'cohenD_histo'],
-                                                         pername_merged_table.loc[notnan, 'cohenD_mri'])
-slope2, intercept2, r2_value, p2_value, std2_err = linregress(pername_merged_table.loc[notnan2, 'cohenD_histo'],
-                                                         pername_merged_table.loc[notnan2, 'cohenD_norm_mri'])
+# mng.full_screen_toggle()
+plt.savefig('mri_CE_boxplot_human_referenceNormalized.png')
+# human_volume_table_selection.to_csv('mri_CE_boxplot_human.csv')
 
 
-# pername_expression_table = pername_expression_table.reindex(columns = ['name',
-#                                                              'cohenD', 'cohenD_BrainNormalized',
-#                                                              'cohenD_CI', 'cohenD_BrainNormalized_CI',
-#                                                              't_stat', 'pVal', 'pVal_BrainNormalized',
-#                                                              'pValBon', 'pValBon_BrainNormalized',
-#                                                              'pValFDR', 'pValFDR_BrainNormalized',
-#                                                              'WT_mean', 'WT_std',
-#                                                              'KO_mean', 'KO_std',
-#                                                              'WT_mean_AllenNormalized', 'WT_std_AllenNormalized',
-#                                                              'KO_mean_AllenNormalized', 'KO_std_AllenNormalized',
-#                                                              'WT_mean_BrainNormalized', 'WT_std_BrainNormalized',
-#                                                              'KO_mean_BrainNormalized', 'KO_std_BrainNormalized'])
-# mouse_table_pername.to_csv(pername_table_path_list[iIncludeInTest - 1])
+## volumeMaskNormalized - Vermis
+# Human SUIT volume overview plot
+figHumanSUITvermis = plt.figure()
+customPalette = [
+    (0.12156862745098039, 0.4666666666666667, 0.7058823529411765),
+    (1.0, 0.4980392156862745, 0.054901960784313725)
+]
+customPalette2 = [
+    (0.25, 0.25, 0.25),
+    (1.0, 0.4980392156862745, 0.054901960784313725)
+]
+human_volume_table_selection = human_volume_table[human_volume_table['name'].str.contains('Vermis')]
+human_volume_table_selection = human_volume_table_selection[human_volume_table_selection['name']!='Cerebellum_Vermis']
+human_volume_table_selection['genotype'] = 'control'
+human_volume_table_selection.loc[human_volume_table_selection['subject'] == 'patient', 'genotype'] = 'patient'
+axHumanSUIT = sns.boxplot(x="name",
+                                y="VolumeMaskNormalized",
+                                hue="genotype",
+                                data=human_volume_table_selection,
+                                hue_order=['control', 'patient'],
+                                palette=customPalette,
+                                medianprops=dict(color="red", alpha=0))
+axHumanSUIT = sns.swarmplot(x="name",
+                                  y="VolumeMaskNormalized",
+                                  hue="genotype",
+                                  data=human_volume_table_selection,
+                                  hue_order=['control', 'patient'],
+                                  palette=customPalette2,
+                                  dodge=0.4)
+# ax5.set_xticklabels(ax5.get_xticklabels(), rotation=60)
+axHumanSUIT.set(xlabel='structure name', ylabel='Normalized to mask volume')
+handles, labels = axHumanSUIT.get_legend_handles_labels()
+l = plt.legend(handles[0:2], ['controls', 'patient'])
+# ax4.set_xticklabels(['SNr', 'SNc', 'MRN', 'Left_I_IV', 'Right_I_IV', 'Left_V', 'Right_V', 'Vermis_VII'])
+mng = plt.get_current_fig_manager()
+# mng.window.state('zoomed') #works fine on Windows!
+# mng.frame.Maximize(True)
+# mng.window.showMaximized
+axHumanSUIT.set_xticklabels(['V_VI', 'V_CrusI', 'V_CrusII', 'V_VIIb',
+                             'V_VIIIa', 'V_VIIIb', 'V_IX', 'V_X'])
+axHumanSUIT.set_xticklabels(axHumanSUIT.get_xticklabels(), rotation=60)
+plt.show()
+# mng.full_screen_toggle()
+plt.savefig('mri_CE_boxplot_human_Vermis_maskNormalized.png')
+# human_volume_table_selection.to_csv('mri_CE_boxplot_human.csv')
+
+
+## volumeNormalized - Vermis
+# Human SUIT volume overview plot
+figHumanSUITvermis_ref = plt.figure()
+customPalette = [
+    (0.12156862745098039, 0.4666666666666667, 0.7058823529411765),
+    (1.0, 0.4980392156862745, 0.054901960784313725)
+]
+customPalette2 = [
+    (0.25, 0.25, 0.25),
+    (1.0, 0.4980392156862745, 0.054901960784313725)
+]
+human_volume_table_selection = human_volume_table[human_volume_table['name'].str.contains('Vermis')]
+human_volume_table_selection = human_volume_table_selection[human_volume_table_selection['name']!='Cerebellum_Vermis']
+human_volume_table_selection['genotype'] = 'control'
+human_volume_table_selection.loc[human_volume_table_selection['subject'] == 'patient', 'genotype'] = 'patient'
+axHumanSUIT = sns.boxplot(x="name",
+                                y="VolumeNormalized",
+                                hue="genotype",
+                                data=human_volume_table_selection,
+                                hue_order=['control', 'patient'],
+                                palette=customPalette,
+                                medianprops=dict(color="red", alpha=0))
+axHumanSUIT = sns.swarmplot(x="name",
+                                  y="VolumeNormalized",
+                                  hue="genotype",
+                                  data=human_volume_table_selection,
+                                  hue_order=['control', 'patient'],
+                                  palette=customPalette2,
+                                  dodge=0.4)
+# ax5.set_xticklabels(ax5.get_xticklabels(), rotation=60)
+axHumanSUIT.set(xlabel='structure name', ylabel='Normalized to reference structure volume')
+handles, labels = axHumanSUIT.get_legend_handles_labels()
+l = plt.legend(handles[0:2], ['controls', 'patient'])
+# ax4.set_xticklabels(['SNr', 'SNc', 'MRN', 'Left_I_IV', 'Right_I_IV', 'Left_V', 'Right_V', 'Vermis_VII'])
+mng = plt.get_current_fig_manager()
+# mng.window.state('zoomed') #works fine on Windows!
+# mng.frame.Maximize(True)
+# mng.window.showMaximized
+axHumanSUIT.set_xticklabels(['V_VI', 'V_CrusI', 'V_CrusII', 'V_VIIb',
+                             'V_VIIIa', 'V_VIIIb', 'V_IX', 'V_X'])
+axHumanSUIT.set_xticklabels(axHumanSUIT.get_xticklabels(), rotation=60)
+plt.show()
+# mng.full_screen_toggle()
+plt.savefig('mri_CE_boxplot_human_Vermis_referenceNormalized.png')
+
+
+
+
+
+
+
+
+
+
+
+## volumeMaskNormalized - Large
+# Human SUIT volume overview plot
+figHumanSUITvermis = plt.figure()
+customPalette = [
+    (0.12156862745098039, 0.4666666666666667, 0.7058823529411765),
+    (1.0, 0.4980392156862745, 0.054901960784313725)
+]
+customPalette2 = [
+    (0.25, 0.25, 0.25),
+    (1.0, 0.4980392156862745, 0.054901960784313725)
+]
+human_volume_table_selection = human_volume_table[np.isin(human_volume_table['name'], ['Cerebellum',
+                                                                                       'Cerebellum_Left', 'Cerebellum_Right',
+                                                                                       'Cerebellum_Posterior', 'Cerebellum_Anterior',
+                                                                                       'Cerebellum_Left_Posterior', 'Cerebellum_Right_Posterior',
+                                                                                       'Cerebellum_Left_Anterior', 'Cerebellum_Right_Anterior',
+                                                                                       'Cerebellum_Vermis'])]
+human_volume_table_selection['genotype'] = 'control'
+human_volume_table_selection.loc[human_volume_table_selection['subject'] == 'patient', 'genotype'] = 'patient'
+axHumanSUIT = sns.boxplot(x="name",
+                                y="VolumeMaskNormalized",
+                                hue="genotype",
+                                data=human_volume_table_selection,
+                                hue_order=['control', 'patient'],
+                                palette=customPalette,
+                                medianprops=dict(color="red", alpha=0))
+axHumanSUIT = sns.swarmplot(x="name",
+                                  y="VolumeMaskNormalized",
+                                  hue="genotype",
+                                  data=human_volume_table_selection,
+                                  hue_order=['control', 'patient'],
+                                  palette=customPalette2,
+                                  dodge=0.4)
+# ax5.set_xticklabels(ax5.get_xticklabels(), rotation=60)
+axHumanSUIT.set(xlabel='structure name', ylabel='Normalized to mask volume')
+handles, labels = axHumanSUIT.get_legend_handles_labels()
+l = plt.legend(handles[0:2], ['controls', 'patient'])
+# ax4.set_xticklabels(['SNr', 'SNc', 'MRN', 'Left_I_IV', 'Right_I_IV', 'Left_V', 'Right_V', 'Vermis_VII'])
+mng = plt.get_current_fig_manager()
+# mng.window.state('zoomed') #works fine on Windows!
+# mng.frame.Maximize(True)
+# mng.window.showMaximized
+axHumanSUIT.set_xticklabels(['CE', 'L_CE', 'R_CE', 'PO_CE', 'AN_CE',
+                     'L_PO_CE', 'R_PO_CE', 'L_AN_CE', 'R_AN_CE',
+                     'V_CE'])
+axHumanSUIT.set_xticklabels(axHumanSUIT.get_xticklabels(), rotation=60)
+plt.show()
+# mng.full_screen_toggle()
+plt.savefig('mri_CE_boxplot_human_large_maskNormalized.png')
+# human_volume_table_selection.to_csv('mri_CE_boxplot_human.csv')
+
+
+## volumeNormalized - Large
+# Human SUIT volume overview plot
+figHumanSUITvermis_ref = plt.figure()
+customPalette = [
+    (0.12156862745098039, 0.4666666666666667, 0.7058823529411765),
+    (1.0, 0.4980392156862745, 0.054901960784313725)
+]
+customPalette2 = [
+    (0.25, 0.25, 0.25),
+    (1.0, 0.4980392156862745, 0.054901960784313725)
+]
+human_volume_table_selection = human_volume_table[np.isin(human_volume_table['name'], ['Cerebellum',
+                                                                                       'Cerebellum_Left', 'Cerebellum_Right',
+                                                                                       'Cerebellum_Posterior', 'Cerebellum_Anterior',
+                                                                                       'Cerebellum_Left_Posterior', 'Cerebellum_Right_Posterior',
+                                                                                       'Cerebellum_Left_Anterior', 'Cerebellum_Right_Anterior',
+                                                                                       'Cerebellum_Vermis'])]
+human_volume_table_selection['genotype'] = 'control'
+human_volume_table_selection.loc[human_volume_table_selection['subject'] == 'patient', 'genotype'] = 'patient'
+axHumanSUIT = sns.boxplot(x="name",
+                                y="VolumeNormalized",
+                                hue="genotype",
+                                data=human_volume_table_selection,
+                                hue_order=['control', 'patient'],
+                                palette=customPalette,
+                                medianprops=dict(color="red", alpha=0))
+axHumanSUIT = sns.swarmplot(x="name",
+                                  y="VolumeNormalized",
+                                  hue="genotype",
+                                  data=human_volume_table_selection,
+                                  hue_order=['control', 'patient'],
+                                  palette=customPalette2,
+                                  dodge=0.4)
+# ax5.set_xticklabels(ax5.get_xticklabels(), rotation=60)
+axHumanSUIT.set(xlabel='structure name', ylabel='Normalized to reference structure volume')
+handles, labels = axHumanSUIT.get_legend_handles_labels()
+l = plt.legend(handles[0:2], ['controls', 'patient'])
+# ax4.set_xticklabels(['SNr', 'SNc', 'MRN', 'Left_I_IV', 'Right_I_IV', 'Left_V', 'Right_V', 'Vermis_VII'])
+mng = plt.get_current_fig_manager()
+# mng.window.state('zoomed') #works fine on Windows!
+# mng.frame.Maximize(True)
+# mng.window.showMaximized
+axHumanSUIT.set_xticklabels(['CE', 'L_CE', 'R_CE', 'PO_CE', 'AN_CE',
+                     'L_PO_CE', 'R_PO_CE', 'L_AN_CE', 'R_AN_CE',
+                     'V_CE'])
+axHumanSUIT.set_xticklabels(axHumanSUIT.get_xticklabels(), rotation=60)
+plt.show()
+# mng.full_screen_toggle()
+plt.savefig('mri_CE_boxplot_human_large_referenceNormalized.png')
+
+
+
+
+
+
+
+## volumeMaskNormalized - Left
+# Human SUIT volume overview plot
+figHumanSUITvermis = plt.figure()
+customPalette = [
+    (0.12156862745098039, 0.4666666666666667, 0.7058823529411765),
+    (1.0, 0.4980392156862745, 0.054901960784313725)
+]
+customPalette2 = [
+    (0.25, 0.25, 0.25),
+    (1.0, 0.4980392156862745, 0.054901960784313725)
+]
+human_volume_table_selection = human_volume_table[human_volume_table['name'].str.contains('Left')]
+human_volume_table_selection = human_volume_table_selection[human_volume_table_selection['name']!='Cerebellum_Left']
+human_volume_table_selection = human_volume_table_selection[human_volume_table_selection['name']!='Cerebellum_Left_Posterior']
+human_volume_table_selection = human_volume_table_selection[human_volume_table_selection['name']!='Cerebellum_Left_Anterior']
+human_volume_table_selection = human_volume_table_selection[human_volume_table_selection['name']!='Left_Dentate']
+human_volume_table_selection = human_volume_table_selection[human_volume_table_selection['name']!='Left_Fastigial']
+human_volume_table_selection = human_volume_table_selection[human_volume_table_selection['name']!='Left_Interposed']
+human_volume_table_selection['genotype'] = 'control'
+human_volume_table_selection.loc[human_volume_table_selection['subject'] == 'patient', 'genotype'] = 'patient'
+axHumanSUIT = sns.boxplot(x="name",
+                                y="VolumeMaskNormalized",
+                                hue="genotype",
+                                data=human_volume_table_selection,
+                                hue_order=['control', 'patient'],
+                                palette=customPalette,
+                                medianprops=dict(color="red", alpha=0))
+axHumanSUIT = sns.swarmplot(x="name",
+                                  y="VolumeMaskNormalized",
+                                  hue="genotype",
+                                  data=human_volume_table_selection,
+                                  hue_order=['control', 'patient'],
+                                  palette=customPalette2,
+                                  dodge=0.4)
+# ax5.set_xticklabels(ax5.get_xticklabels(), rotation=60)
+axHumanSUIT.set(xlabel='structure name', ylabel='Normalized to mask volume')
+handles, labels = axHumanSUIT.get_legend_handles_labels()
+l = plt.legend(handles[0:2], ['controls', 'patient'])
+# ax4.set_xticklabels(['SNr', 'SNc', 'MRN', 'Left_I_IV', 'Right_I_IV', 'Left_V', 'Right_V', 'Vermis_VII'])
+mng = plt.get_current_fig_manager()
+# mng.window.state('zoomed') #works fine on Windows!
+# mng.frame.Maximize(True)
+# mng.window.showMaximized
+axHumanSUIT.set_xticklabels(['L_I-IV', 'L_V', 'L_VI', 'L_CrusI',
+                     'L_CrusII', 'L_VIIb', 'L_VIIIa', 'L_VIIIb', 'L_IX', 'L_X'])
+axHumanSUIT.set_xticklabels(axHumanSUIT.get_xticklabels(), rotation=60)
+plt.show()
+# mng.full_screen_toggle()
+plt.savefig('mri_CE_boxplot_human_Left_maskNormalized.png')
+# human_volume_table_selection.to_csv('mri_CE_boxplot_human.csv')
+
+
+## volumeNormalized - Left
+# Human SUIT volume overview plot
+figHumanSUITvermis_ref = plt.figure()
+customPalette = [
+    (0.12156862745098039, 0.4666666666666667, 0.7058823529411765),
+    (1.0, 0.4980392156862745, 0.054901960784313725)
+]
+customPalette2 = [
+    (0.25, 0.25, 0.25),
+    (1.0, 0.4980392156862745, 0.054901960784313725)
+]
+human_volume_table_selection = human_volume_table[human_volume_table['name'].str.contains('Left')]
+human_volume_table_selection = human_volume_table_selection[human_volume_table_selection['name']!='Cerebellum_Left']
+human_volume_table_selection = human_volume_table_selection[human_volume_table_selection['name']!='Cerebellum_Left_Posterior']
+human_volume_table_selection = human_volume_table_selection[human_volume_table_selection['name']!='Cerebellum_Left_Anterior']
+human_volume_table_selection = human_volume_table_selection[human_volume_table_selection['name']!='Left_Dentate']
+human_volume_table_selection = human_volume_table_selection[human_volume_table_selection['name']!='Left_Fastigial']
+human_volume_table_selection = human_volume_table_selection[human_volume_table_selection['name']!='Left_Interposed']
+human_volume_table_selection['genotype'] = 'control'
+human_volume_table_selection.loc[human_volume_table_selection['subject'] == 'patient', 'genotype'] = 'patient'
+axHumanSUIT = sns.boxplot(x="name",
+                                y="VolumeNormalized",
+                                hue="genotype",
+                                data=human_volume_table_selection,
+                                hue_order=['control', 'patient'],
+                                palette=customPalette,
+                                medianprops=dict(color="red", alpha=0))
+axHumanSUIT = sns.swarmplot(x="name",
+                                  y="VolumeNormalized",
+                                  hue="genotype",
+                                  data=human_volume_table_selection,
+                                  hue_order=['control', 'patient'],
+                                  palette=customPalette2,
+                                  dodge=0.4)
+# ax5.set_xticklabels(ax5.get_xticklabels(), rotation=60)
+axHumanSUIT.set(xlabel='structure name', ylabel='Normalized to reference structure volume')
+handles, labels = axHumanSUIT.get_legend_handles_labels()
+l = plt.legend(handles[0:2], ['controls', 'patient'])
+# ax4.set_xticklabels(['SNr', 'SNc', 'MRN', 'Left_I_IV', 'Right_I_IV', 'Left_V', 'Right_V', 'Vermis_VII'])
+mng = plt.get_current_fig_manager()
+# mng.window.state('zoomed') #works fine on Windows!
+# mng.frame.Maximize(True)
+# mng.window.showMaximized
+axHumanSUIT.set_xticklabels(['L_I-IV', 'L_V', 'L_VI', 'L_CrusI',
+                     'L_CrusII', 'L_VIIb', 'L_VIIIa', 'L_VIIIb', 'L_IX', 'L_X'])
+axHumanSUIT.set_xticklabels(axHumanSUIT.get_xticklabels(), rotation=60)
+plt.show()
+# mng.full_screen_toggle()
+plt.savefig('mri_CE_boxplot_human_Left_referenceNormalized.png')
+
+
+
+
+
+
+## volumeMaskNormalized - Right
+# Human SUIT volume overview plot
+figHumanSUITvermis = plt.figure()
+customPalette = [
+    (0.12156862745098039, 0.4666666666666667, 0.7058823529411765),
+    (1.0, 0.4980392156862745, 0.054901960784313725)
+]
+customPalette2 = [
+    (0.25, 0.25, 0.25),
+    (1.0, 0.4980392156862745, 0.054901960784313725)
+]
+human_volume_table_selection = human_volume_table[human_volume_table['name'].str.contains('Right')]
+human_volume_table_selection = human_volume_table_selection[human_volume_table_selection['name']!='Cerebellum_Right']
+human_volume_table_selection = human_volume_table_selection[human_volume_table_selection['name']!='Cerebellum_Right_Posterior']
+human_volume_table_selection = human_volume_table_selection[human_volume_table_selection['name']!='Cerebellum_Right_Anterior']
+human_volume_table_selection = human_volume_table_selection[human_volume_table_selection['name']!='Right_Dentate']
+human_volume_table_selection = human_volume_table_selection[human_volume_table_selection['name']!='Right_Fastigial']
+human_volume_table_selection = human_volume_table_selection[human_volume_table_selection['name']!='Right_Interposed']
+human_volume_table_selection['genotype'] = 'control'
+human_volume_table_selection.loc[human_volume_table_selection['subject'] == 'patient', 'genotype'] = 'patient'
+axHumanSUIT = sns.boxplot(x="name",
+                            y="VolumeMaskNormalized",
+                            hue="genotype",
+                            data=human_volume_table_selection,
+                            hue_order=['control', 'patient'],
+                            palette=customPalette,
+                            medianprops=dict(color="red", alpha=0))
+axHumanSUIT = sns.swarmplot(x="name",
+                                  y="VolumeMaskNormalized",
+                                  hue="genotype",
+                                  data=human_volume_table_selection,
+                                  hue_order=['control', 'patient'],
+                                  palette=customPalette2,
+                                  dodge=0.4)
+# ax5.set_xticklabels(ax5.get_xticklabels(), rotation=60)
+axHumanSUIT.set(xlabel='structure name', ylabel='Normalized to mask volume')
+handles, labels = axHumanSUIT.get_legend_handles_labels()
+l = plt.legend(handles[0:2], ['controls', 'patient'])
+# ax4.set_xticklabels(['SNr', 'SNc', 'MRN', 'Left_I_IV', 'Right_I_IV', 'Left_V', 'Right_V', 'Vermis_VII'])
+mng = plt.get_current_fig_manager()
+# mng.window.state('zoomed') #works fine on Windows!
+# mng.frame.Maximize(True)
+# mng.window.showMaximized
+axHumanSUIT.set_xticklabels(['R_I-IV', 'R_V',
+                     'R_VI',
+                     'R_CrusI',
+                     'R_CrusII',
+                     'R_VIIb',
+                     'R_VIIIa',
+                     'R_VIIIb',
+                     'R_IX',
+                     'R_X'])
+axHumanSUIT.set_xticklabels(axHumanSUIT.get_xticklabels(), rotation=60)
+plt.show()
+# mng.full_screen_toggle()
+plt.savefig('mri_CE_boxplot_human_Right_maskNormalized.png')
+# human_volume_table_selection.to_csv('mri_CE_boxplot_human.csv')
+
+
+## volumeNormalized - Right
+# Human SUIT volume overview plot
+figHumanSUITvermis_ref = plt.figure()
+customPalette = [
+    (0.12156862745098039, 0.4666666666666667, 0.7058823529411765),
+    (1.0, 0.4980392156862745, 0.054901960784313725)
+]
+customPalette2 = [
+    (0.25, 0.25, 0.25),
+    (1.0, 0.4980392156862745, 0.054901960784313725)
+]
+human_volume_table_selection = human_volume_table[human_volume_table['name'].str.contains('Right')]
+human_volume_table_selection = human_volume_table_selection[human_volume_table_selection['name']!='Cerebellum_Right']
+human_volume_table_selection = human_volume_table_selection[human_volume_table_selection['name']!='Cerebellum_Right_Posterior']
+human_volume_table_selection = human_volume_table_selection[human_volume_table_selection['name']!='Cerebellum_Right_Anterior']
+human_volume_table_selection = human_volume_table_selection[human_volume_table_selection['name']!='Right_Dentate']
+human_volume_table_selection = human_volume_table_selection[human_volume_table_selection['name']!='Right_Fastigial']
+human_volume_table_selection = human_volume_table_selection[human_volume_table_selection['name']!='Right_Interposed']
+human_volume_table_selection['genotype'] = 'control'
+human_volume_table_selection.loc[human_volume_table_selection['subject'] == 'patient', 'genotype'] = 'patient'
+axHumanSUIT = sns.boxplot(x="name",
+                                y="VolumeNormalized",
+                                hue="genotype",
+                                data=human_volume_table_selection,
+                                hue_order=['control', 'patient'],
+                                palette=customPalette,
+                                medianprops=dict(color="red", alpha=0))
+axHumanSUIT = sns.swarmplot(x="name",
+                                  y="VolumeNormalized",
+                                  hue="genotype",
+                                  data=human_volume_table_selection,
+                                  hue_order=['control', 'patient'],
+                                  palette=customPalette2,
+                                  dodge=0.4)
+# ax5.set_xticklabels(ax5.get_xticklabels(), rotation=60)
+axHumanSUIT.set(xlabel='structure name', ylabel='Normalized to reference structure volume')
+handles, labels = axHumanSUIT.get_legend_handles_labels()
+l = plt.legend(handles[0:2], ['controls', 'patient'])
+# ax4.set_xticklabels(['SNr', 'SNc', 'MRN', 'Left_I_IV', 'Right_I_IV', 'Left_V', 'Right_V', 'Vermis_VII'])
+mng = plt.get_current_fig_manager()
+# mng.window.state('zoomed') #works fine on Windows!
+# mng.frame.Maximize(True)
+# mng.window.showMaximized
+axHumanSUIT.set_xticklabels(['R_I-IV', 'R_V',
+                     'R_VI',
+                     'R_CrusI',
+                     'R_CrusII',
+                     'R_VIIb',
+                     'R_VIIIa',
+                     'R_VIIIb',
+                     'R_IX',
+                     'R_X'])
+axHumanSUIT.set_xticklabels(axHumanSUIT.get_xticklabels(), rotation=60)
+plt.show()
+# mng.full_screen_toggle()
+plt.savefig('mri_CE_boxplot_human_Right_referenceNormalized.png')
+
+
+## Orthogonal regression
+lowH_CE_dict = {'Left_CrusI': 'L_C1', 'Left_CrusII': 'L_C2',
+                'Right_CrusI': 'R_C1', 'Right_CrusII': 'R_C2',
+                'Left_IX': 'L_9', 'Left_I_IV': 'L_1-4',
+                'Right_IX': 'R_9', 'Right_I_IV': 'R_1-4',
+                'Left_V': 'L_5', 'Left_VI': 'L_6',
+                'Right_V': 'R_5', 'Right_VI': 'R_6',
+                'Left_VIIIa': 'L_8a', 'Left_VIIIb': 'L_8b',
+                'Right_VIIIa': 'R_8a', 'Right_VIIIb': 'R_8b',
+                'Left_VIIb': 'L_7b', 'Left_X': 'L_10',
+                'Right_VIIb': 'R_7b', 'Right_X': 'R_10',
+                'Vermis_CrusI': 'V_C1', 'Vermis_CrusII': 'V_C2',
+                'Vermis_IX': 'V_9', 'Vermis_VI': 'V_6',
+                'Vermis_VIIIa': 'V_8a', 'Vermis_VIIIb': 'V_8b',
+                'Vermis_VIIb': 'V_7b', 'Vermis_X': 'V_10'
+                }# lower hiararchical dictionary
+lowH_CE_dict_num = {'Left_CrusI': 'C1', 'Left_CrusII': 'C2',
+                'Right_CrusI': 'C1', 'Right_CrusII': 'C2',
+                'Left_IX': '9', 'Left_I_IV': '1-4',
+                'Right_IX': '9', 'Right_I_IV': '1-4',
+                'Left_V': '5', 'Left_VI': '6',
+                'Right_V': '5', 'Right_VI': '6',
+                'Left_VIIIa': '8a', 'Left_VIIIb': '8b',
+                'Right_VIIIa': '8a', 'Right_VIIIb': '8b',
+                'Left_VIIb': '7b', 'Left_X': '10',
+                'Right_VIIb': '7b', 'Right_X': '10',
+                'Vermis_CrusI': 'C1', 'Vermis_CrusII': 'C2',
+                'Vermis_IX': '9', 'Vermis_VI': '6',
+                'Vermis_VIIIa': '8a', 'Vermis_VIIIb': '8b',
+                'Vermis_VIIb': '7b', 'Vermis_X': '10'
+                }# lower hiararchical dictionary
+plot_table = human_volume_table_copy
+plot_table = plot_table[np.isin(plot_table['atlas'], ['Lobules-SUIT'])]
+plot_table = plot_table[np.logical_not(np.isin(plot_table['name'], ['Cerebellum',
+                                                                   'Cerebellum_Left', 'Cerebellum_Right',
+                                                                   'Cerebellum_Posterior', 'Cerebellum_Anterior',
+                                                                   'Cerebellum_Left_Posterior', 'Cerebellum_Right_Posterior',
+                                                                   'Cerebellum_Left_Anterior', 'Cerebellum_Right_Anterior',
+                                                                   'Cerebellum_Vermis',
+                                                                   'Left_Dentate', 'Left_Fastigial', 'Left_Interposed',
+                                                                   'Right_Dentate', 'Right_Fastigial', 'Right_Interposed']))]
+plot_table['genotype'] = 'control'
+plot_table.loc[plot_table['subject'] == 'patient', 'genotype'] = 'patient'
+plot_table = plot_table.groupby(['genotype', 'name']).mean().reset_index()
+orthoregress.orthoregress(plot_table.loc[plot_table['genotype'] == 'patient', 'VolumeNormalized'], plot_table.loc[plot_table['genotype'] == 'control', 'VolumeNormalized'])
+plot_table_merged = pd.merge(left=plot_table.loc[plot_table['genotype'] == 'patient', ['name', 'VolumeNormalized', 'VolumeMaskNormalized']],
+                             right=plot_table.loc[plot_table['genotype'] == 'control', ['name', 'VolumeNormalized', 'VolumeMaskNormalized']],
+                             left_on='name', right_on='name')
+
+# adjust plot_table_merged
+plot_table_merged['shortName'] = ''
+plot_table_merged['shorterName'] = ''
+plot_table_merged['markerInt'] = 0
+for iRow in range(plot_table_merged.shape[0]):
+    shortName = lowH_CE_dict[plot_table_merged['name'].iloc[iRow]]
+    shorterName = lowH_CE_dict_num[plot_table_merged['name'].iloc[iRow]]
+    plot_table_merged.iloc[iRow, plot_table_merged.columns.get_loc('shortName')] = shortName
+    plot_table_merged.iloc[iRow, plot_table_merged.columns.get_loc('shorterName')] = shorterName
+    if shortName[0] == 'L':
+        plot_table_merged.iloc[iRow, plot_table_merged.columns.get_loc('markerInt')] = 0
+    elif shortName[0] == 'R':
+        plot_table_merged.iloc[iRow, plot_table_merged.columns.get_loc('markerInt')] = 1
+    elif shortName[0] == 'V':
+        plot_table_merged.iloc[iRow, plot_table_merged.columns.get_loc('markerInt')] = 2
+
+figRegplot1 = plt.figure()
+# sns.regplot(data=plot_table_merged,
+#                 x='VolumeNormalized_x', y='VolumeNormalized_y')
+x_min = np.min(plot_table_merged['VolumeNormalized_x'])
+y_min = np.min(plot_table_merged['VolumeNormalized_y'])
+x_max = np.max(plot_table_merged['VolumeNormalized_x'])
+y_max = np.max(plot_table_merged['VolumeNormalized_y'])
+plt.scatter(plot_table_merged.loc[plot_table_merged['markerInt'] == 0, 'VolumeNormalized_x'],
+            plot_table_merged.loc[plot_table_merged['markerInt'] == 0, 'VolumeNormalized_y'], marker='o')
+plt.scatter(plot_table_merged.loc[plot_table_merged['markerInt'] == 1, 'VolumeNormalized_x'],
+            plot_table_merged.loc[plot_table_merged['markerInt'] == 1, 'VolumeNormalized_y'], marker='x')
+plt.scatter(plot_table_merged.loc[plot_table_merged['markerInt'] == 2, 'VolumeNormalized_x'],
+            plot_table_merged.loc[plot_table_merged['markerInt'] == 2, 'VolumeNormalized_y'], marker='*')
+plt.legend(['L', 'R', 'V'])
+plt.plot([np.min([x_min, y_min]), np.max([x_max, y_max])],
+         [np.min([x_min, y_min]), np.max([x_max, y_max])])
+for iRow in range(plot_table_merged.shape[0]):
+    plt.text(plot_table_merged['VolumeNormalized_x'].iloc[iRow],
+             plot_table_merged['VolumeNormalized_y'].iloc[iRow],
+             lowH_CE_dict_num[plot_table_merged['name'].iloc[iRow]])
+plt.xlim([np.min([x_min, y_min]), np.max([x_max, y_max])])
+plt.ylim([np.min([x_min, y_min]), np.max([x_max, y_max])])
+plt.xlabel('Patient volume - reference normalized')
+plt.ylabel('Control mean volume - reference normalized')
+plt.show()
+plt.savefig('unity_normalized2ref.png')
+
+figRegplot2 = plt.figure()
+x_min = np.min(plot_table_merged['VolumeMaskNormalized_x'])
+y_min = np.min(plot_table_merged['VolumeMaskNormalized_y'])
+x_max = np.max(plot_table_merged['VolumeMaskNormalized_x'])
+y_max = np.max(plot_table_merged['VolumeMaskNormalized_y'])
+plt.scatter(plot_table_merged.loc[plot_table_merged['markerInt'] == 0, 'VolumeMaskNormalized_x'],
+            plot_table_merged.loc[plot_table_merged['markerInt'] == 0, 'VolumeMaskNormalized_y'], marker='o')
+plt.scatter(plot_table_merged.loc[plot_table_merged['markerInt'] == 1, 'VolumeMaskNormalized_x'],
+            plot_table_merged.loc[plot_table_merged['markerInt'] == 1, 'VolumeMaskNormalized_y'], marker='x')
+plt.scatter(plot_table_merged.loc[plot_table_merged['markerInt'] == 2, 'VolumeMaskNormalized_x'],
+            plot_table_merged.loc[plot_table_merged['markerInt'] == 2, 'VolumeMaskNormalized_y'], marker='*')
+plt.legend(['L', 'R', 'V'])
+plt.plot([np.min([x_min, y_min]), np.max([x_max, y_max])],
+         [np.min([x_min, y_min]), np.max([x_max, y_max])])
+for iRow in range(plot_table_merged.shape[0]):
+    plt.text(plot_table_merged['VolumeMaskNormalized_x'].iloc[iRow],
+             plot_table_merged['VolumeMaskNormalized_y'].iloc[iRow],
+             lowH_CE_dict_num[plot_table_merged['name'].iloc[iRow]])
+plt.xlim([np.min([x_min, y_min]), np.max([x_max, y_max])])
+plt.ylim([np.min([x_min, y_min]), np.max([x_max, y_max])])
+plt.xlabel('Patient volume - mask normalized')
+plt.ylabel('Control mean volume - mask normalized')
+plt.show()
+plt.savefig('unity_normalized2mask.png')
+
+plot_table_merged.rename(columns={'VolumeNormalized_x':'VolumeNormalized_patient',
+                                  'VolumeNormalized_y':'VolumeNormalized_controlMean',
+                                  'VolumeMaskNormalized_x': 'VolumeMaskNormalized_patient',
+                                  'VolumeMaskNormalized_y': 'VolumeMaskNormalized_controlMean'}).to_csv('plot_table_unity_CE_human.csv')
+
+# figRegplot3 = plt.figure()
+# sns.regplot(data=plot_table_merged,
+#                 x='VolumeMaskNormalized_x', y='VolumeMaskNormalized_y')
+# plt.show()
+# figRegplot4 = plt.figure()
+# sns.regplot(data=plot_table_merged,
+#                 x='VolumeMaskNormalized_x', y='VolumeMaskNormalized_y')
+# plt.show()
+#
+# notnan = np.logical_and(np.logical_not(np.isnan(pername_merged_table['cohenD_histo'])),
+#                         np.logical_not(np.isnan(pername_merged_table['cohenD_mri'])))
+# notnan2 = np.logical_and(np.logical_not(np.isnan(pername_merged_table['cohenD_histo'])),
+#                         np.logical_not(np.isnan(pername_merged_table['cohenD_norm_mri'])))
+# slope, intercept, r_value, p_value, std_err = linregress(pername_merged_table.loc[notnan, 'cohenD_histo'],
+#                                                          pername_merged_table.loc[notnan, 'cohenD_mri'])
+# slope2, intercept2, r2_value, p2_value, std2_err = linregress(pername_merged_table.loc[notnan2, 'cohenD_histo'],
+#                                                          pername_merged_table.loc[notnan2, 'cohenD_norm_mri'])
+
+# regression plots of hierarchically low structures
+# and just order table on cohendD,
+# add text to scatter points (acronym-like) plt.annotate(txt, pos1, pos2)
+
+

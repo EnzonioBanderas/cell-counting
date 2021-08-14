@@ -20,6 +20,7 @@ tfa= tfa(3:end);
 % tfa = {'/mnt/tosh/Projects/MEP/cell-counting/Immunostainings_Pax5_extra/20210320_Pax5+-_2A#05_M2_DAPI,TH-AF488,Pax5-Ampl-AF594-01/processed/transformations', ...
 %     '/mnt/tosh/Projects/MEP/cell-counting/Immunostainings_Pax5_extra/20210322_Pax5-pR31Q-_2B#03_M6_DAPI,TH-AF488,Pax5-Ampl-AF594-01/processed/transformations', ...
 %     '/mnt/tosh/Projects/MEP/cell-counting/Immunostainings_Pax5_extra/20210325_Pax5++_2B#10_M9_DAPI,TH-AF488,Pax5-Ampl-AF594-01/processed/transformations'};
+figIntDisAll = figure;
 for iTfa = 1:length(tfa)
 % for iTfa = 1:1
 
@@ -43,9 +44,11 @@ Files_roi = dir(filePattern_roi);
 
 roi_table = {}; %preallocation of the array that will be filled with every loop iteration (info from every slice)
 
-pixel_table = cell(length(Files_transfrom), 1);
-roi_table = cell(length(Files_transfrom), 1);
-for k = 1 : length(Files_transfrom)
+nFT = length(Files_transfrom);
+pixel_table = cell(nFT, 1);
+roi_table = cell(nFT, 1);
+transformed_slice_image_cellArray = cell(nFT, 1);
+for k = 1 : nFT
     % file location of transform, transformed image and csv file fro ROI creation
     baseFileName_transform = Files_transfrom(k).name;
     transform_location = fullfile(Files_transfrom(k).folder, baseFileName_transform);
@@ -74,6 +77,7 @@ for k = 1 : length(Files_transfrom)
     % load the transformed slice image
     transformed_slice_image = imread(transformed_slice_location);
     transformed_slice_image = max(transformed_slice_image, [], 3); % take the maximum over RGB dim, assume only one channel contains all info
+    transformed_slice_image_cellArray{k} = transformed_slice_image;
 
     % load the transform from the transform file
     transform_data = load(transform_location);
@@ -346,6 +350,19 @@ writetable(pernameSection_table, fullfile(processed_folder, 'pernameSection_tabl
 % pername_table.roi_count_perpixel = pername_table.roi_count ./ pername_table.pixel_count;
 % [~, sort_idx] = sort(pername_table.roi_count_perpixel, 'descend');
 % pername_table = pername_table(sort_idx, :);
+
+
+
+% Plot pixel intensity distribution, per section
+figIntDis = figure; hold on
+for iInt = 1:nFT
+    histogram(transformed_slice_image_cellArray{iInt}(:))
+end
+
+% Plot pixel intensity distribution, per mouse
+figure(figIntDisAll); hold on
+transformed_slice_image_concat = [transformed_slice_image_cellArray{:}];
+histogram(transformed_slice_image_concat(:))
 
 
 
