@@ -48,7 +48,7 @@ Immunostainings_TH_extra_useExistingRegistration/
 Copy_of_ud.mat
 
 *.png
-
 *.tif
-
 *.csv
+*.svg
+*.xlsx
